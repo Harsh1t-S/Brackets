@@ -1,0 +1,303 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* Enable class-based dark mode (.dark on <html>) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ------------------------------------------------------------------ *
+ * Design tokens
+ * Semantic names map to CSS variables so light/dark swap at runtime.
+ * ------------------------------------------------------------------ */
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-elevated: var(--elevated);
+
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-subtle: var(--ink-subtle);
+
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-on-brand: var(--on-brand);
+  --color-ring: var(--ring);
+
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+
+  --color-easy: var(--easy);
+  --color-medium: var(--medium);
+  --color-hard: var(--hard);
+
+  --font-sans: "Space Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "SF Mono", monospace;
+  --font-display: "Space Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+}
+
+/* Dark theme only — electric-violet brand on a cool near-black canvas */
+:root {
+  --canvas: #0a0a0f;
+  --surface: #101017;
+  --surface-2: #17171f;
+  --elevated: #1d1d29;
+
+  --line: #24242f;
+  --line-strong: #363646;
+
+  --ink: #ececf3;
+  --ink-muted: #a2a2b5;
+  --ink-subtle: #6c6c82;
+
+  --brand: #7c5cff;
+  --brand-hover: #957bff;
+  --brand-soft: color-mix(in oklab, #7c5cff 18%, transparent);
+  --on-brand: #ffffff;
+  --ring: #7c5cff;
+
+  /* Secondary accent — used for gradients / glows (eye-candy) */
+  --accent: #22d3ee;
+  --accent-soft: color-mix(in oklab, #22d3ee 16%, transparent);
+
+  --easy: #34d399;
+  --medium: #fbbf24;
+  --hard: #fb7185;
+
+  color-scheme: dark;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    /* Snappy, geometric feel — tighten default tracking site-wide */
+    letter-spacing: -0.011em;
+  }
+
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.03em;
+  }
+
+  /* Code/monospace reads best at normal tracking */
+  code, pre, kbd, samp, .font-mono {
+    letter-spacing: normal;
+  }
+
+  ::selection {
+    background: var(--color-brand-soft);
+  }
+
+  /* Custom scrollbar for a more app-like feel */
+  * {
+    scrollbar-color: var(--color-line-strong) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: var(--color-line-strong);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Component primitives
+ * ------------------------------------------------------------------ */
+@layer components {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    transition: background-color 0.15s ease, border-color 0.15s ease,
+      color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    cursor: pointer;
+    outline: none;
+  }
+  .btn:focus-visible {
+    box-shadow: 0 0 0 2px var(--color-canvas), 0 0 0 4px var(--color-ring);
+  }
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background-color: var(--color-brand);
+    color: var(--color-on-brand);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background-color: var(--color-brand-hover);
+  }
+
+  .btn-secondary {
+    background-color: var(--color-surface-2);
+    color: var(--color-ink);
+    border: 1px solid var(--color-line);
+  }
+  .btn-secondary:hover:not(:disabled) {
+    border-color: var(--color-line-strong);
+    background-color: var(--color-elevated);
+  }
+
+  .btn-ghost {
+    background-color: transparent;
+    color: var(--color-ink-muted);
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background-color: var(--color-surface-2);
+    color: var(--color-ink);
+  }
+
+  .card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-2xl);
+  }
+
+  .input {
+    width: 100%;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: 0.75rem;
+    color: var(--color-ink);
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .input::placeholder {
+    color: var(--color-ink-subtle);
+  }
+  .input:focus {
+    border-color: var(--color-brand);
+    box-shadow: 0 0 0 3px var(--color-brand-soft);
+  }
+
+  /* Difficulty badges */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    border-radius: 9999px;
+    padding: 0.125rem 0.625rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+  .badge-easy {
+    color: var(--color-easy);
+    background: color-mix(in oklab, var(--color-easy) 14%, transparent);
+  }
+  .badge-medium {
+    color: var(--color-medium);
+    background: color-mix(in oklab, var(--color-medium) 16%, transparent);
+  }
+  .badge-hard {
+    color: var(--color-hard);
+    background: color-mix(in oklab, var(--color-hard) 16%, transparent);
+  }
+}
+
+/* React-Quill theming to match the design tokens */
+.quill-wrap .ql-toolbar,
+.quill-wrap .ql-container {
+  border-color: var(--color-line) !important;
+}
+.quill-wrap .ql-toolbar {
+  background: var(--color-surface-2);
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+}
+.quill-wrap .ql-container {
+  background: var(--color-surface);
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+.quill-wrap .ql-editor {
+  min-height: 8rem;
+}
+.quill-wrap .ql-editor.ql-blank::before {
+  color: var(--color-ink-subtle);
+}
+:root.dark .quill-wrap .ql-snow .ql-stroke {
+  stroke: var(--color-ink-muted);
+}
+:root.dark .quill-wrap .ql-snow .ql-fill {
+  fill: var(--color-ink-muted);
+}
+:root.dark .quill-wrap .ql-picker {
+  color: var(--color-ink-muted);
+}
+
+/* Subtle grid / glow backdrop helpers */
+.bg-grid {
+  background-image:
+    linear-gradient(to right, var(--color-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--color-line) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+}
+
+/* ------------------------------------------------------------------ *
+ * Eye-candy: brand gradient + glow accents
+ * ------------------------------------------------------------------ */
+.text-gradient {
+  background: linear-gradient(100deg, var(--brand) 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.glow-brand {
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--brand) 40%, transparent),
+    0 8px 30px -6px color-mix(in oklab, var(--brand) 45%, transparent);
+}
+
+/* Radial brand aura for hero / CTA backdrops */
+.bg-brand-aura {
+  background:
+    radial-gradient(60% 55% at 15% 0%, color-mix(in oklab, var(--brand) 22%, transparent) 0%, transparent 60%),
+    radial-gradient(50% 50% at 90% 20%, color-mix(in oklab, var(--accent) 16%, transparent) 0%, transparent 55%);
+}
+
+/* Animated brand button sheen for primary CTAs */
+.btn-glow {
+  position: relative;
+  box-shadow: 0 6px 24px -8px color-mix(in oklab, var(--brand) 70%, transparent);
+}
+.btn-glow:hover:not(:disabled) {
+  box-shadow: 0 8px 30px -6px color-mix(in oklab, var(--brand) 80%, transparent);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

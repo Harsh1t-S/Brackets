@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+model User {
+  id       String @id @default(cuid())
+  name     String
+  email    String @unique
+  password String
+  role     Role   @default(USER)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  problems Problem[]
+  bookmarks Bookmark[]
+  votes    ProblemVote[]
+}
+
+model Problem {
+  id String @id @default(cuid())
+
+  number Int @unique
+
+  title String
+  slug  String @unique
+
+  description String @db.Text
+
+  difficulty Difficulty
+
+  constraints String? @db.Text
+
+  examples Json
+
+  starterCode Json
+
+  solutionCode Json
+
+  tags String[]
+
+  createdById String?
+
+  createdBy User? @relation(fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  acceptance Float @default(0)
+  likes      Int   @default(0)
+  dislikes   Int   @default(0)
+  premium    Boolean @default(false)
+  bookmarks Bookmark[]
+  testCases TestCase[]
+  votes     ProblemVote[]
+}
+
+model ProblemVote {
+  id String @id @default(cuid())
+
+  userId    String
+  problemId String
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  value Int // 1 = like, -1 = dislike
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, problemId])
+}
+
+model TestCase {
+  id String @id @default(cuid())
+
+  problemId String
+  problem   Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  input  String @db.Text
+  output String @db.Text
+
+  isHidden Boolean @default(false)
+  order    Int     @default(0)
+
+  createdAt DateTime @default(now())
+}
+model Bookmark {
+  id        String   @id @default(cuid())
+
+  userId    String
+  problemId String
+
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem    Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, problemId])
+}
