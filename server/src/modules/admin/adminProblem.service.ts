@@ -56,10 +56,11 @@ export class AdminProblemService {
   }: AdminProblemQuery = {}) {
     const where = {
       ...(search && {
-        title: {
-          contains: search,
-          mode: "insensitive" as const,
-        },
+        OR: [
+          { title: { contains: search, mode: "insensitive" as const } },
+          { tags: { has: search } },
+          { companies: { has: search } },
+        ],
       }),
       ...(difficulty && {
         difficulty: difficulty as Difficulty,

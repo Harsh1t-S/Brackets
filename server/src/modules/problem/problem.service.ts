@@ -1,4 +1,7 @@
 import prisma from "../../prisma/prisma";
+import { Prisma } from "@prisma/client";
+
+const DIFFICULTIES = new Set(["EASY", "MEDIUM", "HARD"]);
 
 export const getProblems = async ({
   page = 1,
@@ -13,37 +16,47 @@ export const getProblems = async ({
   difficulty?: string;
   tag?: string;
 }) => {
-  const where = {
-    ...(search && {
-      title: {
-        contains: search,
-        mode: "insensitive" as const,
-      },
-    }),
+  const skip = (page - 1) * limit;
+  const filters: Prisma.Sql[] = [];
 
-    ...(difficulty && {
-      difficulty: difficulty as any,
-    }),
+  const term = search?.trim();
+  if (term) {
+    // Match the term against the title, any tag, or any company — all
+    // case-insensitive and partial (ILIKE).
+    const like = `%${term}%`;
+    filters.push(Prisma.sql`(
+      "title" ILIKE ${like}
+      OR EXISTS (SELECT 1 FROM unnest("tags") AS tg WHERE tg ILIKE ${like})
+      OR EXISTS (SELECT 1 FROM unnest("companies") AS co WHERE co ILIKE ${like})
+    )`);
+  }
 
-    ...(tag && {
-      tags: {
-        has: tag,
-      },
-    }),
-  };
+  if (difficulty && DIFFICULTIES.has(difficulty)) {
+    filters.push(Prisma.sql`"difficulty" = ${difficulty}::"Difficulty"`);
+  }
 
-  const [problems, total] = await Promise.all([
-    prisma.problem.findMany({
-      where,
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: {
-        number: "asc",
-      },
-    }),
+  if (tag) {
+    filters.push(Prisma.sql`${tag} = ANY("tags")`);
+  }
 
-    prisma.problem.count({ where }),
+  const whereSql = filters.length
+    ? Prisma.sql`WHERE ${Prisma.join(filters, " AND ")}`
+    : Prisma.empty;
+
+  const [problems, countRows] = await Promise.all([
+    prisma.$queryRaw`
+      SELECT * FROM "Problem"
+      ${whereSql}
+      ORDER BY "number" ASC
+      LIMIT ${limit} OFFSET ${skip}
+    `,
+    prisma.$queryRaw<{ count: bigint }[]>`
+      SELECT COUNT(*)::bigint AS count FROM "Problem"
+      ${whereSql}
+    `,
   ]);
+
+  const total = Number(countRows[0]?.count ?? 0);
 
   return {
     problems,
