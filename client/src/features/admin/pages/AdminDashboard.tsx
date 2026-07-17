@@ -25,7 +25,7 @@ export default function AdminDashboard() {
 
       <StatsGrid />
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-3">
+      <div className="mt-8 grid items-start gap-6 lg:grid-cols-3">
         <div className="card p-6 lg:col-span-2">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-base font-semibold text-ink">Recently added</h2>
