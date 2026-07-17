@@ -24,7 +24,6 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   const links = [
-    { to: "/", label: "Home", end: true },
     { to: "/problems", label: "Problems" },
     ...(user
       ? [
@@ -42,7 +41,7 @@ export default function Navbar() {
             <Logo />
             <nav className="hidden items-center gap-1 md:flex">
               {links.map((l) => (
-                <NavLink key={l.to} to={l.to} end={l.end} className={navClass}>
+                <NavLink key={l.to} to={l.to} className={navClass}>
                   {l.label}
                 </NavLink>
               ))}
@@ -90,7 +89,6 @@ export default function Navbar() {
                 <NavLink
                   key={l.to}
                   to={l.to}
-                  end={l.end}
                   onClick={() => setOpen(false)}
                   className={navClass}
                 >
