@@ -606,6 +606,466 @@ const problems: Array<{
       { input: "nums = [-1,1,0,-3,3]", output: "[0,0,9,0,0]", isHidden: true },
     ],
   },
+  {
+    title: "Roman to Integer",
+    slug: "roman-to-integer",
+    difficulty: Difficulty.EASY,
+    description:
+      "Given a Roman numeral string <code>s</code>, convert it to an integer.",
+    constraints: "1 <= s.length <= 15\ns is a valid Roman numeral in the range [1, 3999].",
+    acceptance: 58.9,
+    likes: 1420,
+    dislikes: 90,
+    examples: [{ input: 's = "LVIII"', output: "58", explanation: "L = 50, V = 5, III = 3." }],
+    starterCode: {
+      javascript: "function romanToInt(s) {\n\n}",
+      python: "def roman_to_int(s):\n    pass",
+    },
+    solutionCode: {},
+    tags: ["Hash Map", "Math", "String"],
+    companies: ["Amazon", "Microsoft", "Facebook"],
+    testCases: [
+      { input: 's = "III"', output: "3" },
+      { input: 's = "MCMXCIV"', output: "1994", isHidden: true },
+    ],
+  },
+  {
+    title: "Longest Common Prefix",
+    slug: "longest-common-prefix",
+    difficulty: Difficulty.EASY,
+    description:
+      "Write a function to find the longest common prefix string amongst an array of strings <code>strs</code>. Return <code>\"\"</code> if there is none.",
+    constraints: "1 <= strs.length <= 200\n0 <= strs[i].length <= 200",
+    acceptance: 40.5,
+    likes: 1310,
+    dislikes: 120,
+    examples: [{ input: 'strs = ["flower","flow","flight"]', output: '"fl"' }],
+    starterCode: {
+      javascript: "function longestCommonPrefix(strs) {\n\n}",
+      python: "def longest_common_prefix(strs):\n    pass",
+    },
+    solutionCode: {},
+    tags: ["String"],
+    companies: ["Adobe", "Amazon"],
+    testCases: [
+      { input: 'strs = ["flower","flow","flight"]', output: '"fl"' },
+      { input: 'strs = ["dog","racecar","car"]', output: '""', isHidden: true },
+    ],
+  },
+  {
+    title: "Remove Duplicates from Sorted Array",
+    slug: "remove-duplicates-from-sorted-array",
+    difficulty: Difficulty.EASY,
+    description:
+      "Given an ascending sorted array <code>nums</code>, remove duplicates in-place so each unique element appears once, and return the number of unique elements.",
+    constraints: "1 <= nums.length <= 3 * 10^4",
+    acceptance: 52.1,
+    likes: 1120,
+    dislikes: 2100,
+    examples: [{ input: "nums = [1,1,2]", output: "2" }],
+    starterCode: {
+      javascript: "function removeDuplicates(nums) {\n\n}",
+      python: "def remove_duplicates(nums):\n    pass",
+    },
+    solutionCode: {},
+    tags: ["Array", "Two Pointers"],
+    companies: ["Microsoft", "Amazon"],
+    testCases: [
+      { input: "nums = [1,1,2]", output: "2" },
+      { input: "nums = [0,0,1,1,1,2,2,3,3,4]", output: "5", isHidden: true },
+    ],
+  },
+  {
+    title: "Search Insert Position",
+    slug: "search-insert-position",
+    difficulty: Difficulty.EASY,
+    description:
+      "Given a sorted array of distinct integers <code>nums</code> and a <code>target</code>, return the index if found; otherwise the index where it would be inserted. Must run in O(log n).",
+    constraints: "1 <= nums.length <= 10^4",
+    acceptance: 43.0,
+    likes: 990,
+    dislikes: 45,
+    examples: [{ input: "nums = [1,3,5,6], target = 5", output: "2" }],
+    starterCode: {
+      javascript: "function searchInsert(nums, target) {\n\n}",
+      python: "def search_insert(nums, target):\n    pass",
+    },
+    solutionCode: {},
+    tags: ["Array", "Binary Search"],
+    companies: ["Amazon", "Google"],
+    testCases: [
+      { input: "nums = [1,3,5,6], target = 2", output: "1" },
+      { input: "nums = [1,3,5,6], target = 7", output: "4", isHidden: true },
+    ],
+  },
+  {
+    title: "Plus One",
+    slug: "plus-one",
+    difficulty: Difficulty.EASY,
+    description:
+      "You are given a large integer represented as an integer array <code>digits</code>, most significant digit first. Increment the integer by one and return the resulting array of digits.",
+    constraints: "1 <= digits.length <= 100\n0 <= digits[i] <= 9",
+    acceptance: 44.2,
+    likes: 870,
+    dislikes: 1400,
+    examples: [{ input: "digits = [1,2,3]", output: "[1,2,4]" }],
+    starterCode: {
+      javascript: "function plusOne(digits) {\n\n}",
+      python: "def plus_one(digits):\n    pass",
+    },
+    solutionCode: {},
+    tags: ["Array", "Math"],
+    companies: ["Google", "Amazon"],
+    testCases: [
+      { input: "digits = [1,2,3]", output: "[1,2,4]" },
+      { input: "digits = [9]", output: "[1,0]", isHidden: true },
+    ],
+  },
+  {
+    title: "Single Number",
+    slug: "single-number",
+    difficulty: Difficulty.EASY,
+    description:
+      "Given a non-empty array <code>nums</code> where every element appears twice except one, find that single one. Solve it with O(1) extra space.",
+    constraints: "1 <= nums.length <= 3 * 10^4",
+    acceptance: 70.5,
+    likes: 1330,
+    dislikes: 55,
+    examples: [{ input: "nums = [4,1,2,1,2]", output: "4" }],
+    starterCode: {
+      javascript: "function singleNumber(nums) {\n\n}",
+      python: "def single_number(nums):\n    pass",
+    },
+    solutionCode: {
+      javascript:
+        "function singleNumber(nums) {\n  return nums.reduce((a, b) => a ^ b, 0);\n}",
+    },
+    tags: ["Array", "Bit Manipulation"],
+    companies: ["Amazon", "Palantir"],
+    testCases: [
+      { input: "nums = [2,2,1]", output: "1" },
+      { input: "nums = [4,1,2,1,2]", output: "4", isHidden: true },
+    ],
+  },
+  {
+    title: "Majority Element",
+    slug: "majority-element",
+    difficulty: Difficulty.EASY,
+    description:
+      "Given an array <code>nums</code> of size n, return the majority element — the element that appears more than ⌊n / 2⌋ times.",
+    constraints: "n == nums.length\n1 <= n <= 5 * 10^4",
+    acceptance: 64.1,
+    likes: 1210,
+    dislikes: 42,
+    examples: [{ input: "nums = [2,2,1,1,1,2,2]", output: "2" }],
+    starterCode: {
+      javascript: "function majorityElement(nums) {\n\n}",
+      python: "def majority_element(nums):\n    pass",
+    },
+    solutionCode: {},
+    tags: ["Array", "Hash Map", "Sorting"],
+    companies: ["Amazon", "Adobe", "Google"],
+    testCases: [
+      { input: "nums = [3,2,3]", output: "3" },
+      { input: "nums = [2,2,1,1,1,2,2]", output: "2", isHidden: true },
+    ],
+  },
+  {
+    title: "Move Zeroes",
+    slug: "move-zeroes",
+    difficulty: Difficulty.EASY,
+    description:
+      "Given an integer array <code>nums</code>, move all <code>0</code>'s to the end while keeping the relative order of the non-zero elements. Do it in-place.",
+    constraints: "1 <= nums.length <= 10^4",
+    acceptance: 61.7,
+    likes: 1440,
+    dislikes: 40,
+    examples: [{ input: "nums = [0,1,0,3,12]", output: "[1,3,12,0,0]" }],
+    starterCode: {
+      javascript: "function moveZeroes(nums) {\n\n}",
+      python: "def move_zeroes(nums):\n    pass",
+    },
+    solutionCode: {},
+    tags: ["Array", "Two Pointers"],
+    companies: ["Meta", "Bloomberg"],
+    testCases: [
+      { input: "nums = [0,1,0,3,12]", output: "[1,3,12,0,0]" },
+      { input: "nums = [0]", output: "[0]", isHidden: true },
+    ],
+  },
+  {
+    title: "Intersection of Two Arrays",
+    slug: "intersection-of-two-arrays",
+    difficulty: Difficulty.EASY,
+    description:
+      "Given two integer arrays <code>nums1</code> and <code>nums2</code>, return an array of their intersection. Each element in the result must be unique, in any order.",
+    constraints: "1 <= nums1.length, nums2.length <= 1000",
+    acceptance: 71.2,
+    likes: 640,
+    dislikes: 90,
+    examples: [{ input: "nums1 = [1,2,2,1], nums2 = [2,2]", output: "[2]" }],
+    starterCode: {
+      javascript: "function intersection(nums1, nums2) {\n\n}",
+      python: "def intersection(nums1, nums2):\n    pass",
+    },
+    solutionCode: {
+      javascript:
+        "function intersection(nums1, nums2) {\n  const a = new Set(nums1);\n  return [...new Set(nums2.filter((n) => a.has(n)))];\n}",
+    },
+    tags: ["Array", "Hash Map"],
+    companies: ["Google", "Amazon"],
+    testCases: [
+      { input: "nums1 = [1,2,2,1], nums2 = [2,2]", output: "[2]" },
+      { input: "nums1 = [4,9,5], nums2 = [9,4,9,8,4]", output: "[9,4]", isHidden: true },
+    ],
+  },
+  {
+    title: "Fizz Buzz",
+    slug: "fizz-buzz",
+    difficulty: Difficulty.EASY,
+    description:
+      "Given an integer <code>n</code>, return a string array where each i (1-indexed) is \"FizzBuzz\" if divisible by 3 and 5, \"Fizz\" if by 3, \"Buzz\" if by 5, otherwise the number.",
+    constraints: "1 <= n <= 10^4",
+    acceptance: 69.9,
+    likes: 520,
+    dislikes: 260,
+    examples: [{ input: "n = 3", output: '["1","2","Fizz"]' }],
+    starterCode: {
+      javascript: "function fizzBuzz(n) {\n\n}",
+      python: "def fizz_buzz(n):\n    pass",
+    },
+    solutionCode: {},
+    tags: ["Math", "String", "Simulation"],
+    companies: ["Microsoft", "Amazon"],
+    testCases: [{ input: "n = 5", output: '["1","2","Fizz","4","Buzz"]' }],
+  },
+  {
+    title: "Two Sum II - Input Array Is Sorted",
+    slug: "two-sum-ii-input-array-is-sorted",
+    difficulty: Difficulty.MEDIUM,
+    description:
+      "Given a 1-indexed array <code>numbers</code> sorted in non-decreasing order, find two numbers that add up to <code>target</code> and return their 1-indexed positions. Use O(1) extra space.",
+    constraints: "2 <= numbers.length <= 3 * 10^4",
+    acceptance: 60.3,
+    likes: 980,
+    dislikes: 120,
+    examples: [{ input: "numbers = [2,7,11,15], target = 9", output: "[1,2]" }],
+    starterCode: {
+      javascript: "function twoSum(numbers, target) {\n\n}",
+      python: "def two_sum(numbers, target):\n    pass",
+    },
+    solutionCode: {},
+    tags: ["Array", "Two Pointers", "Binary Search"],
+    companies: ["Amazon", "Apple"],
+    testCases: [
+      { input: "numbers = [2,7,11,15], target = 9", output: "[1,2]" },
+      { input: "numbers = [2,3,4], target = 6", output: "[1,3]", isHidden: true },
+    ],
+  },
+  {
+    title: "3Sum",
+    slug: "3sum",
+    difficulty: Difficulty.MEDIUM,
+    description:
+      "Given an integer array <code>nums</code>, return all unique triplets <code>[nums[i], nums[j], nums[k]]</code> such that they sum to zero.",
+    constraints: "3 <= nums.length <= 3000",
+    acceptance: 34.8,
+    likes: 3020,
+    dislikes: 290,
+    examples: [{ input: "nums = [-1,0,1,2,-1,-4]", output: "[[-1,-1,2],[-1,0,1]]" }],
+    starterCode: {
+      javascript: "function threeSum(nums) {\n\n}",
+      python: "def three_sum(nums):\n    pass",
+    },
+    solutionCode: {},
+    tags: ["Array", "Two Pointers", "Sorting"],
+    companies: ["Meta", "Amazon", "Adobe"],
+    testCases: [
+      { input: "nums = [0,1,1]", output: "[]" },
+      { input: "nums = [0,0,0]", output: "[[0,0,0]]", isHidden: true },
+    ],
+  },
+  {
+    title: "Container With Most Water",
+    slug: "container-with-most-water",
+    difficulty: Difficulty.MEDIUM,
+    description:
+      "Given an integer array <code>height</code>, find two lines that together with the x-axis form a container holding the most water. Return the maximum area.",
+    constraints: "2 <= height.length <= 10^5",
+    acceptance: 55.6,
+    likes: 2700,
+    dislikes: 180,
+    examples: [{ input: "height = [1,8,6,2,5,4,8,3,7]", output: "49" }],
+    starterCode: {
+      javascript: "function maxArea(height) {\n\n}",
+      python: "def max_area(height):\n    pass",
+    },
+    solutionCode: {
+      javascript:
+        "function maxArea(height) {\n  let l = 0, r = height.length - 1, best = 0;\n  while (l < r) {\n    best = Math.max(best, Math.min(height[l], height[r]) * (r - l));\n    if (height[l] < height[r]) l++; else r--;\n  }\n  return best;\n}",
+    },
+    tags: ["Array", "Two Pointers", "Greedy"],
+    companies: ["Amazon", "Google", "Bloomberg"],
+    testCases: [
+      { input: "height = [1,8,6,2,5,4,8,3,7]", output: "49" },
+      { input: "height = [1,1]", output: "1", isHidden: true },
+    ],
+  },
+  {
+    title: "Rotate Image",
+    slug: "rotate-image",
+    difficulty: Difficulty.MEDIUM,
+    description:
+      "You are given an <code>n x n</code> 2D <code>matrix</code>. Rotate it 90 degrees clockwise in-place.",
+    constraints: "n == matrix.length == matrix[i].length\n1 <= n <= 20",
+    acceptance: 72.3,
+    likes: 1600,
+    dislikes: 70,
+    examples: [{ input: "matrix = [[1,2,3],[4,5,6],[7,8,9]]", output: "[[7,4,1],[8,5,2],[9,6,3]]" }],
+    starterCode: {
+      javascript: "function rotate(matrix) {\n\n}",
+      python: "def rotate(matrix):\n    pass",
+    },
+    solutionCode: {},
+    tags: ["Array", "Math", "Matrix"],
+    companies: ["Amazon", "Microsoft", "Apple"],
+    testCases: [{ input: "matrix = [[1,2],[3,4]]", output: "[[3,1],[4,2]]" }],
+  },
+  {
+    title: "Spiral Matrix",
+    slug: "spiral-matrix",
+    difficulty: Difficulty.MEDIUM,
+    description:
+      "Given an <code>m x n</code> <code>matrix</code>, return all elements of the matrix in spiral order.",
+    constraints: "1 <= m, n <= 10",
+    acceptance: 47.9,
+    likes: 1490,
+    dislikes: 210,
+    examples: [{ input: "matrix = [[1,2,3],[4,5,6],[7,8,9]]", output: "[1,2,3,6,9,8,7,4,5]" }],
+    starterCode: {
+      javascript: "function spiralOrder(matrix) {\n\n}",
+      python: "def spiral_order(matrix):\n    pass",
+    },
+    solutionCode: {},
+    tags: ["Array", "Matrix", "Simulation"],
+    companies: ["Amazon", "Microsoft", "Google"],
+    testCases: [{ input: "matrix = [[1,2],[3,4]]", output: "[1,2,4,3]" }],
+  },
+  {
+    title: "Set Matrix Zeroes",
+    slug: "set-matrix-zeroes",
+    difficulty: Difficulty.MEDIUM,
+    description:
+      "Given an <code>m x n</code> integer <code>matrix</code>, if an element is 0, set its entire row and column to 0. Do it in-place.",
+    constraints: "1 <= m, n <= 200",
+    acceptance: 55.1,
+    likes: 1200,
+    dislikes: 120,
+    examples: [{ input: "matrix = [[1,1,1],[1,0,1],[1,1,1]]", output: "[[1,0,1],[0,0,0],[1,0,1]]" }],
+    starterCode: {
+      javascript: "function setZeroes(matrix) {\n\n}",
+      python: "def set_zeroes(matrix):\n    pass",
+    },
+    solutionCode: {},
+    tags: ["Array", "Hash Map", "Matrix"],
+    companies: ["Amazon", "Microsoft"],
+    testCases: [{ input: "matrix = [[0,1],[1,1]]", output: "[[0,0],[0,1]]" }],
+  },
+  {
+    title: "Word Search",
+    slug: "word-search",
+    difficulty: Difficulty.MEDIUM,
+    description:
+      "Given an <code>m x n</code> grid of characters <code>board</code> and a string <code>word</code>, return <code>true</code> if the word exists in the grid via sequentially adjacent cells.",
+    constraints: "1 <= m, n <= 6\n1 <= word.length <= 15",
+    acceptance: 42.0,
+    likes: 2100,
+    dislikes: 95,
+    examples: [{ input: 'board = [["A","B"],["C","D"]], word = "ABDC"', output: "true" }],
+    starterCode: {
+      javascript: "function exist(board, word) {\n\n}",
+      python: "def exist(board, word):\n    pass",
+    },
+    solutionCode: {},
+    tags: ["Array", "Backtracking", "Matrix"],
+    companies: ["Amazon", "Microsoft", "Bloomberg"],
+    testCases: [{ input: 'board = [["A","B"],["C","D"]], word = "ABDC"', output: "true" }],
+  },
+  {
+    title: "Top K Frequent Elements",
+    slug: "top-k-frequent-elements",
+    difficulty: Difficulty.MEDIUM,
+    description:
+      "Given an integer array <code>nums</code> and an integer <code>k</code>, return the <code>k</code> most frequent elements, in any order.",
+    constraints: "1 <= nums.length <= 10^5\n1 <= k <= number of unique elements",
+    acceptance: 63.4,
+    likes: 1900,
+    dislikes: 90,
+    examples: [{ input: "nums = [1,1,1,2,2,3], k = 2", output: "[1,2]" }],
+    starterCode: {
+      javascript: "function topKFrequent(nums, k) {\n\n}",
+      python: "def top_k_frequent(nums, k):\n    pass",
+    },
+    solutionCode: {},
+    tags: ["Array", "Hash Map", "Heap"],
+    companies: ["Amazon", "Facebook", "Yelp"],
+    testCases: [
+      { input: "nums = [1,1,1,2,2,3], k = 2", output: "[1,2]" },
+      { input: "nums = [1], k = 1", output: "[1]", isHidden: true },
+    ],
+  },
+  {
+    title: "Sqrt(x)",
+    slug: "sqrtx",
+    difficulty: Difficulty.EASY,
+    description:
+      "Given a non-negative integer <code>x</code>, return the square root of <code>x</code> rounded down to the nearest integer, computed without built-in exponent functions.",
+    constraints: "0 <= x <= 2^31 - 1",
+    acceptance: 38.6,
+    likes: 760,
+    dislikes: 900,
+    examples: [{ input: "x = 8", output: "2", explanation: "sqrt(8) = 2.82..., rounded down is 2." }],
+    starterCode: {
+      javascript: "function mySqrt(x) {\n\n}",
+      python: "def my_sqrt(x):\n    pass",
+    },
+    solutionCode: {
+      javascript:
+        "function mySqrt(x) {\n  let lo = 0, hi = x, ans = 0;\n  while (lo <= hi) {\n    const m = (lo + hi) >> 1;\n    if (m * m <= x) { ans = m; lo = m + 1; } else hi = m - 1;\n  }\n  return ans;\n}",
+    },
+    tags: ["Math", "Binary Search"],
+    companies: ["Bloomberg", "Amazon"],
+    testCases: [
+      { input: "x = 4", output: "2" },
+      { input: "x = 8", output: "2", isHidden: true },
+    ],
+  },
+  {
+    title: "Length of Last Word",
+    slug: "length-of-last-word",
+    difficulty: Difficulty.EASY,
+    description:
+      "Given a string <code>s</code> of words separated by spaces, return the length of the last word.",
+    constraints: "1 <= s.length <= 10^4",
+    acceptance: 46.8,
+    likes: 610,
+    dislikes: 380,
+    examples: [{ input: 's = "Hello World"', output: "5" }],
+    starterCode: {
+      javascript: "function lengthOfLastWord(s) {\n\n}",
+      python: "def length_of_last_word(s):\n    pass",
+    },
+    solutionCode: {
+      javascript:
+        "function lengthOfLastWord(s) {\n  return s.trim().split(' ').pop().length;\n}",
+    },
+    tags: ["String"],
+    companies: ["Amazon"],
+    testCases: [
+      { input: 's = "   fly me   to   the moon  "', output: "4" },
+      { input: 's = "luffy is still joyboy"', output: "6", isHidden: true },
+    ],
+  },
 ];
 
 async function main() {
@@ -637,31 +1097,47 @@ async function main() {
     },
   });
 
-  // --- Problems ---
-  await prisma.bookmark.deleteMany();
-  await prisma.problem.deleteMany();
+  // --- Problems (additive — preserves bookmarks & votes) ---
+  // Existing problems keep their number; new ones are appended after the
+  // current max so we never collide with the unique `number` constraint.
+  const maxAgg = await prisma.problem.aggregate({ _max: { number: true } });
+  let nextNumber = maxAgg._max.number ?? 0;
 
-  for (let i = 0; i < problems.length; i++) {
-    const { testCases, ...p } = problems[i];
+  for (const raw of problems) {
+    const { testCases, ...p } = raw;
 
-    await prisma.problem.create({
-      data: {
-        ...p,
-        number: i + 1,
-        createdById: admin.id,
-        testCases: {
-          create: testCases.map((tc, idx) => ({
-            input: tc.input,
-            output: tc.output,
-            isHidden: tc.isHidden ?? false,
-            order: idx,
-          })),
-        },
-      },
+    const existing = await prisma.problem.findUnique({
+      where: { slug: p.slug },
+      select: { id: true },
     });
+
+    const problem = existing
+      ? await prisma.problem.update({
+          where: { slug: p.slug },
+          data: { ...p, createdById: admin.id },
+        })
+      : await prisma.problem.create({
+          data: { ...p, number: ++nextNumber, createdById: admin.id },
+        });
+
+    // Refresh only this problem's test cases (not user data).
+    await prisma.testCase.deleteMany({ where: { problemId: problem.id } });
+    if (testCases.length) {
+      await prisma.testCase.createMany({
+        data: testCases.map((tc, idx) => ({
+          problemId: problem.id,
+          input: tc.input,
+          output: tc.output,
+          isHidden: tc.isHidden ?? false,
+          order: idx,
+        })),
+      });
+    }
   }
 
-  console.log(`✅ Seed completed: ${problems.length} problems, 2 users`);
+  console.log(
+    `✅ Seed completed: ${problems.length} problems upserted (users, bookmarks & votes preserved)`
+  );
   console.log("   Admin login: admin@codeforge.dev / admin123");
   console.log("   User login:  user@codeforge.dev / user1234");
 }
