@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useParams } from "react-router-dom";
 
 import MainLayout from "../layouts/MainLayout";
 import { RequireAuth, RequireAdmin, GuestOnly } from "./ProtectedRoute";
@@ -20,6 +20,17 @@ import BookmarksPage from "../../features/bookmarks/pages/BookmarksPage";
 import NotFoundPage from "../../components/common/NotFoundPage";
 import ScrollToTop from "../../components/common/ScrollToTop";
 
+// A bare "/5" jumps to problem #5. Static routes (/login, /problems, …) rank
+// higher than this dynamic segment, so only unmatched single-segment paths
+// land here; non-numeric ones fall through to the 404.
+function ProblemShortcut() {
+  const { key = "" } = useParams();
+  if (/^\d+$/.test(key)) {
+    return <Navigate to={`/problems/${key}`} replace />;
+  }
+  return <NotFoundPage />;
+}
+
 export default function AppRouter() {
   return (
     <>
@@ -30,6 +41,7 @@ export default function AppRouter() {
         <Route path="/" element={<HomePage />} />
         <Route path="/problems" element={<ProblemsPage />} />
         <Route path="/problems/:key/:slug?" element={<ProblemDetailsPage />} />
+        <Route path="/:key" element={<ProblemShortcut />} />
 
         <Route element={<RequireAuth />}>
           <Route path="/dashboard" element={<DashboardPage />} />
