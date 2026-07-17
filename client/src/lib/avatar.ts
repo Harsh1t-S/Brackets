@@ -10,11 +10,33 @@ function hashString(input: string): number {
   return Math.abs(hash);
 }
 
-export function avatarDataUri(name: string): string {
+// Persisted per-browser avatar colour the signed-in user can pick.
+const HUE_KEY = "avatarHue";
+
+export function getSavedAvatarHue(): number | undefined {
+  try {
+    const v = localStorage.getItem(HUE_KEY);
+    if (v === null) return undefined;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+export function setSavedAvatarHue(hue: number): void {
+  try {
+    localStorage.setItem(HUE_KEY, String(hue));
+  } catch {
+    /* ignore */
+  }
+}
+
+export function avatarDataUri(name: string, hueOverride?: number): string {
   const seed = name?.trim() || "?";
   const hash = hashString(seed);
 
-  const hue = hash % 360;
+  const hue = hueOverride ?? hash % 360;
   const hue2 = (hue + 45) % 360;
 
   const initials = seed

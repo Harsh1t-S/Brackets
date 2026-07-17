@@ -9,7 +9,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "../features/auth/context/AuthContext";
-import { avatarDataUri } from "../lib/avatar";
+import { avatarDataUri, getSavedAvatarHue } from "../lib/avatar";
 
 export default function UserMenu() {
   const { user, logout } = useAuth();
@@ -42,7 +42,7 @@ export default function UserMenu() {
         className="flex items-center gap-2 rounded-xl border border-line bg-surface px-2 py-1.5 pr-3 transition-colors hover:border-line-strong"
       >
         <img
-          src={avatarDataUri(user?.name ?? "?")}
+          src={avatarDataUri(user?.name ?? "?", getSavedAvatarHue())}
           alt=""
           className="h-8 w-8 rounded-lg"
         />
