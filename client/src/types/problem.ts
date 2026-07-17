@@ -19,6 +19,7 @@ export interface Problem {
   solutionCode: Record<string, string>;
 
   tags: string[];
+  companies?: string[];
 
   acceptance: number;
   likes: number;

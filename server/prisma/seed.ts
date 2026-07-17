@@ -23,6 +23,7 @@ const problems: Array<{
   starterCode: Record<string, string>;
   solutionCode: Record<string, string>;
   tags: string[];
+  companies?: string[];
   testCases: TestCaseInput[];
 }> = [
   {
@@ -293,6 +294,316 @@ const problems: Array<{
         output: "2.50000",
         isHidden: true,
       },
+    ],
+  },
+  {
+    title: "Best Time to Buy and Sell Stock",
+    slug: "best-time-to-buy-and-sell-stock",
+    difficulty: Difficulty.EASY,
+    description:
+      "You are given an array <code>prices</code> where <code>prices[i]</code> is the price of a stock on day <code>i</code>. Maximize profit by choosing one day to buy and a later day to sell. Return the maximum profit, or <code>0</code> if no profit is possible.",
+    constraints: "1 <= prices.length <= 10^5\n0 <= prices[i] <= 10^4",
+    acceptance: 54.3,
+    likes: 2980,
+    dislikes: 96,
+    examples: [
+      { input: "prices = [7,1,5,3,6,4]", output: "5", explanation: "Buy on day 2 (price 1), sell on day 5 (price 6)." },
+    ],
+    starterCode: {
+      javascript: "function maxProfit(prices) {\n\n}",
+      python: "def max_profit(prices):\n    pass",
+    },
+    solutionCode: {
+      javascript:
+        "function maxProfit(prices) {\n  let min = Infinity, best = 0;\n  for (const p of prices) {\n    min = Math.min(min, p);\n    best = Math.max(best, p - min);\n  }\n  return best;\n}",
+    },
+    tags: ["Array", "Dynamic Programming"],
+    companies: ["Amazon", "Google", "Bloomberg"],
+    testCases: [
+      { input: "prices = [7,1,5,3,6,4]", output: "5" },
+      { input: "prices = [7,6,4,3,1]", output: "0", isHidden: true },
+    ],
+  },
+  {
+    title: "Contains Duplicate",
+    slug: "contains-duplicate",
+    difficulty: Difficulty.EASY,
+    description:
+      "Given an integer array <code>nums</code>, return <code>true</code> if any value appears at least twice, and <code>false</code> if every element is distinct.",
+    constraints: "1 <= nums.length <= 10^5\n-10^9 <= nums[i] <= 10^9",
+    acceptance: 61.0,
+    likes: 1740,
+    dislikes: 210,
+    examples: [{ input: "nums = [1,2,3,1]", output: "true" }],
+    starterCode: {
+      javascript: "function containsDuplicate(nums) {\n\n}",
+      python: "def contains_duplicate(nums):\n    pass",
+    },
+    solutionCode: {
+      javascript:
+        "function containsDuplicate(nums) {\n  return new Set(nums).size !== nums.length;\n}",
+    },
+    tags: ["Array", "Hash Map"],
+    companies: ["Amazon", "Adobe"],
+    testCases: [
+      { input: "nums = [1,2,3,1]", output: "true" },
+      { input: "nums = [1,2,3,4]", output: "false", isHidden: true },
+    ],
+  },
+  {
+    title: "Maximum Subarray",
+    slug: "maximum-subarray",
+    difficulty: Difficulty.MEDIUM,
+    description:
+      "Given an integer array <code>nums</code>, find the contiguous subarray with the largest sum and return that sum.",
+    constraints: "1 <= nums.length <= 10^5\n-10^4 <= nums[i] <= 10^4",
+    acceptance: 50.2,
+    likes: 3410,
+    dislikes: 140,
+    examples: [
+      { input: "nums = [-2,1,-3,4,-1,2,1,-5,4]", output: "6", explanation: "[4,-1,2,1] has the largest sum 6." },
+    ],
+    starterCode: {
+      javascript: "function maxSubArray(nums) {\n\n}",
+      python: "def max_sub_array(nums):\n    pass",
+    },
+    solutionCode: {
+      javascript:
+        "function maxSubArray(nums) {\n  let best = nums[0], cur = nums[0];\n  for (let i = 1; i < nums.length; i++) {\n    cur = Math.max(nums[i], cur + nums[i]);\n    best = Math.max(best, cur);\n  }\n  return best;\n}",
+    },
+    tags: ["Array", "Dynamic Programming"],
+    companies: ["Microsoft", "LinkedIn", "Amazon"],
+    testCases: [
+      { input: "nums = [-2,1,-3,4,-1,2,1,-5,4]", output: "6" },
+      { input: "nums = [1]", output: "1", isHidden: true },
+    ],
+  },
+  {
+    title: "Merge Two Sorted Lists",
+    slug: "merge-two-sorted-lists",
+    difficulty: Difficulty.EASY,
+    description:
+      "You are given the heads of two sorted linked lists <code>list1</code> and <code>list2</code>. Splice them together into one sorted list and return its head.",
+    constraints: "The number of nodes in both lists is in the range [0, 50].",
+    acceptance: 63.4,
+    likes: 2210,
+    dislikes: 88,
+    examples: [{ input: "list1 = [1,2,4], list2 = [1,3,4]", output: "[1,1,2,3,4,4]" }],
+    starterCode: {
+      javascript: "function mergeTwoLists(list1, list2) {\n\n}",
+      python: "def merge_two_lists(list1, list2):\n    pass",
+    },
+    solutionCode: {},
+    tags: ["Linked List", "Recursion"],
+    companies: ["Amazon", "Microsoft", "Apple"],
+    testCases: [
+      { input: "list1 = [1,2,4], list2 = [1,3,4]", output: "[1,1,2,3,4,4]" },
+      { input: "list1 = [], list2 = []", output: "[]", isHidden: true },
+    ],
+  },
+  {
+    title: "Climbing Stairs",
+    slug: "climbing-stairs",
+    difficulty: Difficulty.EASY,
+    description:
+      "You are climbing a staircase that takes <code>n</code> steps to reach the top. Each time you can climb 1 or 2 steps. In how many distinct ways can you reach the top?",
+    constraints: "1 <= n <= 45",
+    acceptance: 52.0,
+    likes: 2650,
+    dislikes: 82,
+    examples: [{ input: "n = 3", output: "3", explanation: "1+1+1, 1+2, 2+1." }],
+    starterCode: {
+      javascript: "function climbStairs(n) {\n\n}",
+      python: "def climb_stairs(n):\n    pass",
+    },
+    solutionCode: {
+      javascript:
+        "function climbStairs(n) {\n  let a = 1, b = 1;\n  for (let i = 0; i < n; i++) [a, b] = [b, a + b];\n  return a;\n}",
+    },
+    tags: ["Dynamic Programming", "Math"],
+    companies: ["Adobe", "Amazon"],
+    testCases: [
+      { input: "n = 2", output: "2" },
+      { input: "n = 3", output: "3", isHidden: true },
+    ],
+  },
+  {
+    title: "Binary Search",
+    slug: "binary-search",
+    difficulty: Difficulty.EASY,
+    description:
+      "Given a sorted (ascending) array of integers <code>nums</code> and a <code>target</code>, return the index of <code>target</code> or <code>-1</code> if it is not present. Your solution must run in O(log n) time.",
+    constraints: "1 <= nums.length <= 10^4\nAll integers in nums are unique.",
+    acceptance: 58.1,
+    likes: 1620,
+    dislikes: 40,
+    examples: [{ input: "nums = [-1,0,3,5,9,12], target = 9", output: "4" }],
+    starterCode: {
+      javascript: "function search(nums, target) {\n\n}",
+      python: "def search(nums, target):\n    pass",
+    },
+    solutionCode: {
+      javascript:
+        "function search(nums, target) {\n  let lo = 0, hi = nums.length - 1;\n  while (lo <= hi) {\n    const mid = (lo + hi) >> 1;\n    if (nums[mid] === target) return mid;\n    if (nums[mid] < target) lo = mid + 1; else hi = mid - 1;\n  }\n  return -1;\n}",
+    },
+    tags: ["Array", "Binary Search"],
+    companies: ["Google", "Meta"],
+    testCases: [
+      { input: "nums = [-1,0,3,5,9,12], target = 9", output: "4" },
+      { input: "nums = [-1,0,3,5,9,12], target = 2", output: "-1", isHidden: true },
+    ],
+  },
+  {
+    title: "Valid Anagram",
+    slug: "valid-anagram",
+    difficulty: Difficulty.EASY,
+    description:
+      "Given two strings <code>s</code> and <code>t</code>, return <code>true</code> if <code>t</code> is an anagram of <code>s</code>, and <code>false</code> otherwise.",
+    constraints: "1 <= s.length, t.length <= 5 * 10^4\ns and t consist of lowercase English letters.",
+    acceptance: 63.0,
+    likes: 1490,
+    dislikes: 55,
+    examples: [{ input: 's = "anagram", t = "nagaram"', output: "true" }],
+    starterCode: {
+      javascript: "function isAnagram(s, t) {\n\n}",
+      python: "def is_anagram(s, t):\n    pass",
+    },
+    solutionCode: {
+      javascript:
+        "function isAnagram(s, t) {\n  if (s.length !== t.length) return false;\n  const c = {};\n  for (const ch of s) c[ch] = (c[ch] || 0) + 1;\n  for (const ch of t) { if (!c[ch]) return false; c[ch]--; }\n  return true;\n}",
+    },
+    tags: ["Hash Map", "String", "Sorting"],
+    companies: ["Amazon", "Uber", "Bloomberg"],
+    testCases: [
+      { input: 's = "anagram", t = "nagaram"', output: "true" },
+      { input: 's = "rat", t = "car"', output: "false", isHidden: true },
+    ],
+  },
+  {
+    title: "Reverse Linked List",
+    slug: "reverse-linked-list",
+    difficulty: Difficulty.EASY,
+    description:
+      "Given the <code>head</code> of a singly linked list, reverse the list and return the new head.",
+    constraints: "The number of nodes is in the range [0, 5000].",
+    acceptance: 73.2,
+    likes: 3300,
+    dislikes: 60,
+    examples: [{ input: "head = [1,2,3,4,5]", output: "[5,4,3,2,1]" }],
+    starterCode: {
+      javascript: "function reverseList(head) {\n\n}",
+      python: "def reverse_list(head):\n    pass",
+    },
+    solutionCode: {},
+    tags: ["Linked List", "Recursion"],
+    companies: ["Meta", "Microsoft", "Amazon"],
+    testCases: [
+      { input: "head = [1,2,3,4,5]", output: "[5,4,3,2,1]" },
+      { input: "head = []", output: "[]", isHidden: true },
+    ],
+  },
+  {
+    title: "Group Anagrams",
+    slug: "group-anagrams",
+    difficulty: Difficulty.MEDIUM,
+    description:
+      "Given an array of strings <code>strs</code>, group the anagrams together. You may return the answer in any order.",
+    constraints: "1 <= strs.length <= 10^4\n0 <= strs[i].length <= 100",
+    acceptance: 66.1,
+    likes: 1980,
+    dislikes: 70,
+    examples: [
+      { input: 'strs = ["eat","tea","tan","ate","nat","bat"]', output: '[["bat"],["nat","tan"],["ate","eat","tea"]]' },
+    ],
+    starterCode: {
+      javascript: "function groupAnagrams(strs) {\n\n}",
+      python: "def group_anagrams(strs):\n    pass",
+    },
+    solutionCode: {
+      javascript:
+        "function groupAnagrams(strs) {\n  const m = new Map();\n  for (const s of strs) {\n    const k = [...s].sort().join('');\n    (m.get(k) || m.set(k, []).get(k)).push(s);\n  }\n  return [...m.values()];\n}",
+    },
+    tags: ["Hash Map", "String", "Sorting"],
+    companies: ["Amazon", "Uber", "Facebook"],
+    testCases: [
+      { input: 'strs = ["eat","tea","tan","ate","nat","bat"]', output: '[["bat"],["nat","tan"],["ate","eat","tea"]]' },
+      { input: 'strs = [""]', output: '[[""]]', isHidden: true },
+    ],
+  },
+  {
+    title: "Number of Islands",
+    slug: "number-of-islands",
+    difficulty: Difficulty.MEDIUM,
+    description:
+      "Given an <code>m x n</code> 2D grid of <code>'1'</code>s (land) and <code>'0'</code>s (water), return the number of islands. An island is surrounded by water and formed by connecting adjacent land horizontally or vertically.",
+    constraints: "1 <= m, n <= 300\ngrid[i][j] is '0' or '1'.",
+    acceptance: 57.4,
+    likes: 2870,
+    dislikes: 65,
+    examples: [
+      { input: 'grid = [["1","1","0"],["1","0","0"],["0","0","1"]]', output: "2" },
+    ],
+    starterCode: {
+      javascript: "function numIslands(grid) {\n\n}",
+      python: "def num_islands(grid):\n    pass",
+    },
+    solutionCode: {},
+    tags: ["Graph", "Depth-First Search", "Matrix"],
+    companies: ["Amazon", "Google", "Microsoft"],
+    testCases: [
+      { input: 'grid = [["1","1","0"],["1","0","0"],["0","0","1"]]', output: "2" },
+    ],
+  },
+  {
+    title: "Coin Change",
+    slug: "coin-change",
+    difficulty: Difficulty.MEDIUM,
+    description:
+      "You are given an integer array <code>coins</code> and an integer <code>amount</code>. Return the fewest number of coins needed to make up that amount, or <code>-1</code> if it cannot be made.",
+    constraints: "1 <= coins.length <= 12\n0 <= amount <= 10^4",
+    acceptance: 44.0,
+    likes: 2540,
+    dislikes: 60,
+    examples: [{ input: "coins = [1,2,5], amount = 11", output: "3", explanation: "11 = 5 + 5 + 1." }],
+    starterCode: {
+      javascript: "function coinChange(coins, amount) {\n\n}",
+      python: "def coin_change(coins, amount):\n    pass",
+    },
+    solutionCode: {
+      javascript:
+        "function coinChange(coins, amount) {\n  const dp = Array(amount + 1).fill(Infinity);\n  dp[0] = 0;\n  for (let a = 1; a <= amount; a++)\n    for (const c of coins)\n      if (c <= a) dp[a] = Math.min(dp[a], dp[a - c] + 1);\n  return dp[amount] === Infinity ? -1 : dp[amount];\n}",
+    },
+    tags: ["Dynamic Programming", "Array"],
+    companies: ["Amazon", "Google"],
+    testCases: [
+      { input: "coins = [1,2,5], amount = 11", output: "3" },
+      { input: "coins = [2], amount = 3", output: "-1", isHidden: true },
+    ],
+  },
+  {
+    title: "Product of Array Except Self",
+    slug: "product-of-array-except-self",
+    difficulty: Difficulty.MEDIUM,
+    description:
+      "Given an integer array <code>nums</code>, return an array <code>answer</code> such that <code>answer[i]</code> is the product of all elements except <code>nums[i]</code>. Solve it without division and in O(n) time.",
+    constraints: "2 <= nums.length <= 10^5\n-30 <= nums[i] <= 30",
+    acceptance: 65.2,
+    likes: 2760,
+    dislikes: 45,
+    examples: [{ input: "nums = [1,2,3,4]", output: "[24,12,8,6]" }],
+    starterCode: {
+      javascript: "function productExceptSelf(nums) {\n\n}",
+      python: "def product_except_self(nums):\n    pass",
+    },
+    solutionCode: {
+      javascript:
+        "function productExceptSelf(nums) {\n  const n = nums.length, res = Array(n).fill(1);\n  let pre = 1;\n  for (let i = 0; i < n; i++) { res[i] = pre; pre *= nums[i]; }\n  let post = 1;\n  for (let i = n - 1; i >= 0; i--) { res[i] *= post; post *= nums[i]; }\n  return res;\n}",
+    },
+    tags: ["Array", "Prefix Sum"],
+    companies: ["Meta", "Amazon", "Apple"],
+    testCases: [
+      { input: "nums = [1,2,3,4]", output: "[24,12,8,6]" },
+      { input: "nums = [-1,1,0,-3,3]", output: "[0,0,9,0,0]", isHidden: true },
     ],
   },
 ];

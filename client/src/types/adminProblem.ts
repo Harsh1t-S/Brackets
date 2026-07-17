@@ -26,6 +26,7 @@ export interface AdminProblem {
   difficulty: Difficulty;
 
   tags: string[];
+  companies?: string[];
 
   examples: Example[];
 
@@ -54,6 +55,7 @@ export interface CreateProblemDto {
   difficulty: Difficulty;
 
   tags: string[];
+  companies?: string[];
 
   examples: Example[];
 

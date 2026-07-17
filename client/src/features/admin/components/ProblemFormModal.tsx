@@ -59,6 +59,7 @@ export default function ProblemFormModal({ open, onClose, editingProblem }: Prop
   const [description, setDescription] = useState("");
   const [constraints, setConstraints] = useState("");
   const [tags, setTags] = useState("");
+  const [companies, setCompanies] = useState("");
   const [acceptance, setAcceptance] = useState(0);
   const [examples, setExamples] = useState<Example[]>([{ ...emptyExample }]);
   const [testCases, setTestCases] = useState<TestCase[]>([{ ...emptyTestCase }]);
@@ -79,6 +80,7 @@ export default function ProblemFormModal({ open, onClose, editingProblem }: Prop
     setDescription(editingProblem.description);
     setConstraints(editingProblem.constraints ?? "");
     setTags(editingProblem.tags.join(", "));
+    setCompanies(editingProblem.companies?.join(", ") ?? "");
     setAcceptance(editingProblem.acceptance);
     setExamples(
       editingProblem.examples?.length
@@ -112,6 +114,7 @@ export default function ProblemFormModal({ open, onClose, editingProblem }: Prop
     setDescription("");
     setConstraints("");
     setTags("");
+    setCompanies("");
     setAcceptance(0);
     setExamples([{ ...emptyExample }]);
     setTestCases([{ ...emptyTestCase }]);
@@ -181,6 +184,7 @@ export default function ProblemFormModal({ open, onClose, editingProblem }: Prop
       difficulty,
       constraints,
       tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
+      companies: companies.split(",").map((c) => c.trim()).filter(Boolean),
       examples: examples.filter((e) => e.input.trim() || e.output.trim()),
       testCases: testCases.filter((tc) => tc.input.trim() && tc.output.trim()),
       starterCode: toObject(starter),
@@ -321,15 +325,31 @@ export default function ProblemFormModal({ open, onClose, editingProblem }: Prop
             </label>
           </div>
 
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-ink">Tags</label>
-            <input
-              className="input px-3 py-2.5"
-              placeholder="Array, Hash Map, Binary Search"
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-            />
-            <p className="mt-1 text-xs text-ink-subtle">Comma-separated.</p>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-ink">Tags</label>
+              <input
+                className="input px-3 py-2.5"
+                placeholder="Array, Hash Map, Binary Search"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+              />
+              <p className="mt-1 text-xs text-ink-subtle">Comma-separated.</p>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-ink">
+                Companies
+              </label>
+              <input
+                className="input px-3 py-2.5"
+                placeholder="Google, Amazon, Meta"
+                value={companies}
+                onChange={(e) => setCompanies(e.target.value)}
+              />
+              <p className="mt-1 text-xs text-ink-subtle">
+                Comma-separated — who asks this problem.
+              </p>
+            </div>
           </div>
 
           <div className="border-b border-line pb-2 pt-2">

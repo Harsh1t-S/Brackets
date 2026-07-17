@@ -55,6 +55,8 @@ model Problem {
 
   tags String[]
 
+  companies String[] @default([])
+
   createdById String?
 
   createdBy User? @relation(fields: [createdById], references: [id])

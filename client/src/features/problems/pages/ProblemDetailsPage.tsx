@@ -87,6 +87,20 @@ export default function ProblemDetailsPage() {
             </div>
 
             <ProblemActions problem={problem} />
+
+            {problem.companies && problem.companies.length > 0 && (
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <span className="text-sm text-ink-subtle">Asked by</span>
+                {problem.companies.map((c) => (
+                  <span
+                    key={c}
+                    className="rounded-md border border-line bg-surface-2 px-2.5 py-1 text-xs font-medium text-ink"
+                  >
+                    {c}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           <section className="mb-10">

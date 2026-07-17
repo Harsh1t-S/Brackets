@@ -36,6 +36,12 @@ solutionCode: z.any(),
     .min(1, "At least one tag is required.")
     .max(10, "Maximum 10 tags are allowed."),
 
+  companies: z
+    .array(z.string().trim().min(1))
+    .max(15, "Maximum 15 companies are allowed.")
+    .optional()
+    .default([]),
+
   premium: z.boolean().default(false),
 
   acceptance: z
