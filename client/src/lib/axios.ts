@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://codeforge-production-c28d.up.railway.app/api",
+  baseURL: "https://brackets-production-26e2.up.railway.app/",
   headers: {
     "Content-Type": "application/json",
   },
