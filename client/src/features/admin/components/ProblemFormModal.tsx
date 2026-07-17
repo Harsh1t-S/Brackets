@@ -227,7 +227,7 @@ export default function ProblemFormModal({ open, onClose, editingProblem }: Prop
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-      <div className="card flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden shadow-2xl">
+      <div className="card flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-line px-6 py-4">
           <h2 className="text-lg font-bold text-ink">
@@ -243,12 +243,19 @@ export default function ProblemFormModal({ open, onClose, editingProblem }: Prop
         </div>
 
         {/* Body */}
-        <div className="flex-1 space-y-6 overflow-y-auto p-6">
+        <div className="flex-1 space-y-8 overflow-y-auto p-6 sm:p-8">
           {error && (
             <div className="rounded-lg border border-hard/30 bg-hard/10 px-4 py-3 text-sm text-hard">
               {error}
             </div>
           )}
+
+          <div className="border-b border-line pb-2">
+            <h3 className="text-base font-semibold text-ink">Basics</h3>
+            <p className="mt-0.5 text-xs text-ink-subtle">
+              Title, difficulty and tags — shown on the problem card.
+            </p>
+          </div>
 
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div>
@@ -325,6 +332,13 @@ export default function ProblemFormModal({ open, onClose, editingProblem }: Prop
             <p className="mt-1 text-xs text-ink-subtle">Comma-separated.</p>
           </div>
 
+          <div className="border-b border-line pb-2 pt-2">
+            <h3 className="text-base font-semibold text-ink">Statement</h3>
+            <p className="mt-0.5 text-xs text-ink-subtle">
+              What the solver reads: description, constraints and examples.
+            </p>
+          </div>
+
           <div>
             <label className="mb-2 block text-sm font-medium text-ink">Description</label>
             <div className="quill-wrap">
@@ -394,6 +408,13 @@ export default function ProblemFormModal({ open, onClose, editingProblem }: Prop
             </div>
           </div>
 
+          <div className="border-b border-line pb-2 pt-2">
+            <h3 className="text-base font-semibold text-ink">Grading</h3>
+            <p className="mt-0.5 text-xs text-ink-subtle">
+              Test cases the interpreter runs against submissions.
+            </p>
+          </div>
+
           {/* Test cases */}
           <div>
             <div className="mb-2 flex items-center justify-between">
@@ -457,6 +478,13 @@ export default function ProblemFormModal({ open, onClose, editingProblem }: Prop
                 </div>
               ))}
             </div>
+          </div>
+
+          <div className="border-b border-line pb-2 pt-2">
+            <h3 className="text-base font-semibold text-ink">Code</h3>
+            <p className="mt-0.5 text-xs text-ink-subtle">
+              Per-language starter stubs and the reference solution.
+            </p>
           </div>
 
           {/* Starter code */}
