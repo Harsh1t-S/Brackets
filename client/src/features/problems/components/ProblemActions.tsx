@@ -1,12 +1,20 @@
 import { useNavigate } from "react-router-dom";
-import { ThumbsUp, ThumbsDown, Bookmark, BookmarkCheck } from "lucide-react";
+import {
+  ThumbsUp,
+  ThumbsDown,
+  Bookmark,
+  BookmarkCheck,
+  CheckCircle2,
+} from "lucide-react";
 import type { Problem } from "../../../types/problem";
 import { useAuth } from "../../auth/context/AuthContext";
 import { useMyVote, useVote } from "../hooks/useVote";
+import { useMySolved, useToggleSolved } from "../hooks/useSolved";
 import {
   useBookmarks,
   useToggleBookmark,
 } from "../../bookmarks/hooks/useBookmarks";
+import { useToast } from "../../../components/common/Toast";
 
 interface Props {
   problem: Problem;
@@ -23,6 +31,10 @@ export default function ProblemActions({ problem }: Props) {
   const toggleBookmark = useToggleBookmark();
   const bookmarked =
     !!user && bookmarks.some((b) => b.problem.id === problem.id);
+
+  const toast = useToast();
+  const { data: solved = false } = useMySolved(problem.id, !!user);
+  const toggleSolved = useToggleSolved(problem.id);
 
   function guard(action: () => void) {
     return () => {
@@ -70,6 +82,29 @@ export default function ProblemActions({ problem }: Props) {
         }`}
       >
         <ThumbsDown size={15} /> {problem.dislikes}
+      </button>
+
+      <button
+        onClick={guard(() =>
+          toggleSolved.mutate(undefined, {
+            onSuccess: (r) =>
+              toast(
+                r.solved ? "Marked as solved 🎉" : "Unmarked as solved",
+                r.solved ? "success" : "info"
+              ),
+          })
+        )}
+        disabled={toggleSolved.isPending}
+        aria-pressed={solved}
+        title={user ? "Mark as solved" : "Sign in to track progress"}
+        className={`${pill} ${
+          solved
+            ? "border-easy/40 bg-easy/10 text-easy"
+            : "border-line bg-surface-2 text-ink-muted hover:text-easy"
+        }`}
+      >
+        <CheckCircle2 size={15} />
+        {solved ? "Solved" : "Mark solved"}
       </button>
 
       <button

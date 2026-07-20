@@ -44,8 +44,13 @@ export const getProblems = async ({
     : Prisma.empty;
 
   const [problems, countRows] = await Promise.all([
+    // Explicit column list: the public list must never ship solutionCode
+    // (or starterCode — the editor loads it from the detail endpoint).
     prisma.$queryRaw`
-      SELECT * FROM "Problem"
+      SELECT "id", "number", "title", "slug", "difficulty", "tags",
+             "companies", "acceptance", "likes", "dislikes", "premium",
+             "createdAt", "updatedAt"
+      FROM "Problem"
       ${whereSql}
       ORDER BY "number" ASC
       LIMIT ${limit} OFFSET ${skip}
@@ -115,6 +120,27 @@ export const setVote = async (
   ]);
 
   return { likes: problem.likes, dislikes: problem.dislikes, myVote: next };
+};
+
+export const toggleSolved = async (userId: string, problemId: string) => {
+  const existing = await prisma.solvedProblem.findUnique({
+    where: { userId_problemId: { userId, problemId } },
+  });
+
+  if (existing) {
+    await prisma.solvedProblem.delete({ where: { id: existing.id } });
+    return { solved: false };
+  }
+
+  await prisma.solvedProblem.create({ data: { userId, problemId } });
+  return { solved: true };
+};
+
+export const getMySolved = async (userId: string, problemId: string) => {
+  const row = await prisma.solvedProblem.findUnique({
+    where: { userId_problemId: { userId, problemId } },
+  });
+  return !!row;
 };
 
 export const getMyVote = async (userId: string, problemId: string) => {

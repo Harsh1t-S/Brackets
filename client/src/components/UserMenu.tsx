@@ -42,9 +42,9 @@ export default function UserMenu() {
         className="flex items-center gap-2 rounded-xl border border-line bg-surface px-2 py-1.5 pr-3 transition-colors hover:border-line-strong"
       >
         <img
-          src={avatarDataUri(user?.name ?? "?", getSavedAvatarHue())}
+          src={user?.avatar || avatarDataUri(user?.name ?? "?", getSavedAvatarHue())}
           alt=""
-          className="h-8 w-8 rounded-lg"
+          className="h-8 w-8 rounded-lg object-cover"
         />
         <span className="hidden text-sm font-medium text-ink md:block">
           {user?.name}

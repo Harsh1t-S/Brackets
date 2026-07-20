@@ -15,6 +15,7 @@ declare global {
         name?: string;
         email?: string;
         role: Role;
+        avatar?: string | null;
       };
     }
   }
@@ -52,6 +53,7 @@ export const protect = async (
         name: true,
         email: true,
         role: true,
+        avatar: true,
       },
     });
 
@@ -72,4 +74,34 @@ export const protect = async (
       message: "Invalid or expired token",
     });
   }
+};
+
+/**
+ * Like `protect`, but never rejects: sets req.user when a valid token is
+ * present and continues anonymously otherwise. Used by public endpoints
+ * that reveal extra data (e.g. solutions) to signed-in users.
+ */
+export const optionalAuth = async (
+  req: Request,
+  _res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader?.startsWith("Bearer ")) {
+      const decoded = jwt.verify(
+        authHeader.split(" ")[1],
+        process.env.JWT_SECRET as string
+      ) as JwtPayload;
+
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.userId },
+        select: { id: true, name: true, email: true, role: true, avatar: true },
+      });
+      if (user) req.user = user;
+    }
+  } catch {
+    // Invalid/expired token — treat as anonymous.
+  }
+  next();
 };

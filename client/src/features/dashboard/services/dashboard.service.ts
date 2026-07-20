@@ -1,22 +1,26 @@
 import api from "../../../lib/axios";
 
+interface ProblemSummaryRow {
+  id: string;
+  createdAt: string;
+
+  problem: {
+    id: string;
+    number: number;
+    title: string;
+    slug: string;
+    difficulty: "EASY" | "MEDIUM" | "HARD";
+  };
+}
+
 export interface DashboardStats {
   totalProblems: number;
   bookmarks: number;
   votesCast: number;
+  solvedCount: number;
 
-  recentBookmarks: {
-    id: string;
-    createdAt: string;
-
-    problem: {
-      id: string;
-      number: number;
-      title: string;
-      slug: string;
-      difficulty: "EASY" | "MEDIUM" | "HARD";
-    };
-  }[];
+  recentBookmarks: ProblemSummaryRow[];
+  recentSolved: ProblemSummaryRow[];
 }
 
 class DashboardService {

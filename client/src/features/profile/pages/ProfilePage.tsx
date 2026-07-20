@@ -1,15 +1,28 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Mail, Bookmark, ChevronRight, Check } from "lucide-react";
+import {
+  Mail,
+  Bookmark,
+  ChevronRight,
+  Check,
+  CheckCircle2,
+  Upload,
+  Trash2,
+  Pencil,
+} from "lucide-react";
 import { useAuth } from "../../auth/context/AuthContext";
 import {
   avatarDataUri,
   getSavedAvatarHue,
   setSavedAvatarHue,
 } from "../../../lib/avatar";
+import { fileToAvatarDataUri } from "../../../lib/image";
+import { updateMe } from "../../auth/services/auth.service";
 import { useBookmarks } from "../../bookmarks/hooks/useBookmarks";
+import { useDashboard } from "../../dashboard/hooks/useDashboard";
 import Pagination from "../../../components/common/Pagination";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
+import { useToast } from "../../../components/common/Toast";
 
 const badgeClass: Record<string, string> = {
   EASY: "badge badge-easy",
@@ -22,15 +35,72 @@ const PAGE_SIZE = 5;
 
 export default function ProfilePage() {
   useDocumentTitle("Profile");
-  const { user } = useAuth();
+  const { user, refresh } = useAuth();
   const { data: bookmarks = [] } = useBookmarks();
+  const { data: dashboard } = useDashboard();
+  const toast = useToast();
 
   const [hue, setHue] = useState<number | undefined>(() => getSavedAvatarHue());
   const [page, setPage] = useState(1);
+  const [saving, setSaving] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
 
   function pickHue(h: number) {
     setHue(h);
     setSavedAvatarHue(h);
+  }
+
+  async function onPhotoPicked(file: File | undefined) {
+    if (!file) return;
+    setSaving(true);
+    try {
+      const avatar = await fileToAvatarDataUri(file);
+      await updateMe({ avatar });
+      await refresh();
+      toast("Profile photo updated", "success");
+    } catch (e: any) {
+      toast(
+        e?.response?.data?.message ?? e?.message ?? "Couldn't update photo",
+        "error"
+      );
+    } finally {
+      setSaving(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
+
+  async function removePhoto() {
+    setSaving(true);
+    try {
+      await updateMe({ avatar: null });
+      await refresh();
+      toast("Photo removed", "info");
+    } catch {
+      toast("Couldn't remove photo", "error");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function saveName() {
+    const next = nameDraft.trim();
+    if (next.length < 3) {
+      toast("Name must be at least 3 characters.", "error");
+      return;
+    }
+    setSaving(true);
+    try {
+      await updateMe({ name: next });
+      await refresh();
+      setEditingName(false);
+      toast("Name updated", "success");
+    } catch (e: any) {
+      toast(e?.response?.data?.message ?? "Couldn't update name", "error");
+    } finally {
+      setSaving(false);
+    }
   }
 
   const totalPages = Math.max(1, Math.ceil(bookmarks.length / PAGE_SIZE));
@@ -56,12 +126,50 @@ export default function ProfilePage() {
       <div className="card mt-8 p-8">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
           <img
-            src={avatarDataUri(name, hue)}
+            src={user?.avatar || avatarDataUri(name, hue)}
             alt=""
-            className="h-20 w-20 rounded-2xl"
+            className="h-20 w-20 rounded-2xl object-cover"
           />
-          <div>
-            <h2 className="text-2xl font-semibold text-ink">{name}</h2>
+          <div className="min-w-0 flex-1">
+            {editingName ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  value={nameDraft}
+                  onChange={(e) => setNameDraft(e.target.value)}
+                  className="input max-w-xs px-3 py-2"
+                  maxLength={50}
+                  autoFocus
+                />
+                <button
+                  onClick={saveName}
+                  disabled={saving}
+                  className="btn btn-primary px-4 py-2 text-sm"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={() => setEditingName(false)}
+                  disabled={saving}
+                  className="btn btn-ghost px-3 py-2 text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <h2 className="flex items-center gap-2 text-2xl font-semibold text-ink">
+                {name}
+                <button
+                  onClick={() => {
+                    setNameDraft(name);
+                    setEditingName(true);
+                  }}
+                  aria-label="Edit name"
+                  className="text-ink-subtle transition-colors hover:text-ink"
+                >
+                  <Pencil size={16} />
+                </button>
+              </h2>
+            )}
             <p className="text-ink-muted">{user?.email}</p>
             <span className={`badge mt-2 inline-flex ${roleBadge}`}>
               {user?.role}
@@ -69,11 +177,45 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Avatar colour picker */}
+        {/* Profile photo */}
+        <div className="mt-8 border-t border-line pt-6">
+          <p className="text-sm font-medium text-ink">Profile photo</p>
+          <p className="mb-3 text-xs text-ink-subtle">
+            Upload your own image — it's resized and stored with your account.
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => onPhotoPicked(e.target.files?.[0])}
+            />
+            <button
+              onClick={() => fileRef.current?.click()}
+              disabled={saving}
+              className="btn btn-secondary px-4 py-2 text-sm"
+            >
+              <Upload size={15} /> Upload photo
+            </button>
+            {user?.avatar && (
+              <button
+                onClick={removePhoto}
+                disabled={saving}
+                className="btn btn-ghost px-4 py-2 text-sm text-hard"
+              >
+                <Trash2 size={15} /> Remove
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Avatar colour picker (used when no photo is uploaded) */}
         <div className="mt-8 border-t border-line pt-6">
           <p className="text-sm font-medium text-ink">Avatar colour</p>
           <p className="mb-3 text-xs text-ink-subtle">
-            Make it yours — saved on this device.
+            Used for your generated avatar when no photo is set — saved on
+            this device.
           </p>
           <div className="flex flex-wrap gap-2.5">
             {HUES.map((h) => (
@@ -97,12 +239,21 @@ export default function ProfilePage() {
         </div>
 
         {/* Details */}
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+        <div className="mt-8 grid gap-4 sm:grid-cols-3">
           <div className="rounded-xl border border-line bg-surface-2 p-4">
             <p className="flex items-center gap-2 text-xs text-ink-subtle">
               <Mail size={14} /> Email
             </p>
-            <p className="mt-1.5 font-medium text-ink">{user?.email}</p>
+            <p className="mt-1.5 truncate font-medium text-ink">{user?.email}</p>
+          </div>
+          <div className="rounded-xl border border-line bg-surface-2 p-4">
+            <p className="flex items-center gap-2 text-xs text-ink-subtle">
+              <CheckCircle2 size={14} /> Solved
+            </p>
+            <p className="mt-1.5 font-medium text-ink">
+              {dashboard?.solvedCount ?? 0} problem
+              {(dashboard?.solvedCount ?? 0) !== 1 && "s"}
+            </p>
           </div>
           <div className="rounded-xl border border-line bg-surface-2 p-4">
             <p className="flex items-center gap-2 text-xs text-ink-subtle">
@@ -114,6 +265,41 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Recently solved */}
+      {dashboard && dashboard.recentSolved?.length > 0 && (
+        <div className="mt-10">
+          <h2 className="mb-4 text-xl font-bold tracking-tight text-ink">
+            Recently solved
+          </h2>
+          <div className="space-y-3">
+            {dashboard.recentSolved.map((row) => (
+              <Link
+                key={row.id}
+                to={`/problems/${row.problem.number}/${row.problem.slug}`}
+                className="card group flex items-center justify-between p-4 transition-colors hover:border-line-strong"
+              >
+                <span className="flex items-center gap-3">
+                  <CheckCircle2 size={17} className="shrink-0 text-easy" />
+                  <h3 className="font-semibold text-ink transition-colors group-hover:text-brand">
+                    <span className="mr-2 text-ink-subtle">
+                      #{row.problem.number}
+                    </span>
+                    {row.problem.title}
+                  </h3>
+                </span>
+                <span
+                  className={
+                    badgeClass[row.problem.difficulty] ?? "badge badge-easy"
+                  }
+                >
+                  {row.problem.difficulty}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Bookmarked problems */}
       <div className="mt-10">

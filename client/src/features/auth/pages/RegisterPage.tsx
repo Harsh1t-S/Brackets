@@ -29,6 +29,16 @@ export default function RegisterPage() {
       return;
     }
 
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+
+    if (name.trim().length < 3) {
+      setError("Name must be at least 3 characters.");
+      return;
+    }
+
     setLoading(true);
     try {
       const data = await register({ name, email, password });

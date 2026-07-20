@@ -25,12 +25,30 @@ model User {
   password String
   role     Role   @default(USER)
 
+  // Small data-URI image uploaded by the user (resized client-side).
+  avatar String? @db.Text
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   problems Problem[]
   bookmarks Bookmark[]
   votes    ProblemVote[]
+  solved   SolvedProblem[]
+}
+
+model SolvedProblem {
+  id String @id @default(cuid())
+
+  userId    String
+  problemId String
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, problemId])
 }
 
 model Problem {
@@ -70,6 +88,7 @@ model Problem {
   bookmarks Bookmark[]
   testCases TestCase[]
   votes     ProblemVote[]
+  solvedBy  SolvedProblem[]
 }
 
 model ProblemVote {

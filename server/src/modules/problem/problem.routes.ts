@@ -1,7 +1,7 @@
 import { Router } from "express";
 
 import * as controller from "./problem.controller";
-import { protect } from "../auth/auth.middleware";
+import { protect, optionalAuth } from "../auth/auth.middleware";
 
 const router = Router();
 
@@ -12,6 +12,9 @@ router.get("/stats", controller.stats);
 router.post("/:id/vote", protect, controller.vote);
 router.get("/:id/vote", protect, controller.myVote);
 
-router.get("/:slug", controller.details);
+router.post("/:id/solved", protect, controller.solved);
+router.get("/:id/solved", protect, controller.mySolved);
+
+router.get("/:slug", optionalAuth, controller.details);
 
 export default router;

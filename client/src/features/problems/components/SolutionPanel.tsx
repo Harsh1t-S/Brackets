@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Eye, EyeOff, Lock } from "lucide-react";
 import type { Problem } from "../../../types/problem";
 
 interface Props {
@@ -8,11 +9,35 @@ interface Props {
 
 export default function SolutionPanel({ problem }: Props) {
   const languages = useMemo(
-    () => Object.keys(problem.solutionCode),
+    () => Object.keys(problem.solutionCode ?? {}),
     [problem]
   );
   const [language, setLanguage] = useState(languages[0] ?? "javascript");
   const [show, setShow] = useState(false);
+
+  // The API only ships solutions to signed-in users.
+  if (languages.length === 0) {
+    return (
+      <section className="mt-10">
+        <div className="card flex items-center justify-between gap-4 p-4">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-2 text-ink-subtle">
+              <Lock size={18} />
+            </span>
+            <div>
+              <h2 className="font-semibold text-ink">Solution</h2>
+              <p className="text-sm text-ink-muted">
+                Sign in to view the reference solution.
+              </p>
+            </div>
+          </div>
+          <Link to="/login" className="btn btn-secondary px-4 py-2 text-sm">
+            Sign in
+          </Link>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="mt-10">

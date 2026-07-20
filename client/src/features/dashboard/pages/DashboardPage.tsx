@@ -1,5 +1,11 @@
 import { Link } from "react-router-dom";
-import { ListChecks, Bookmark, ThumbsUp, ChevronRight } from "lucide-react";
+import {
+  ListChecks,
+  Bookmark,
+  ThumbsUp,
+  ChevronRight,
+  CheckCircle2,
+} from "lucide-react";
 
 import { useDashboard } from "../hooks/useDashboard";
 import { useAuth } from "../../auth/context/AuthContext";
@@ -33,6 +39,7 @@ export default function DashboardPage() {
   }
 
   const stats = [
+    { label: "Solved", value: data.solvedCount ?? 0, icon: CheckCircle2 },
     { label: "Total Problems", value: data.totalProblems, icon: ListChecks },
     { label: "Bookmarks", value: data.bookmarks, icon: Bookmark },
     { label: "Votes Cast", value: data.votesCast, icon: ThumbsUp },
@@ -50,7 +57,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map(({ label, value, icon: Icon }) => (
           <div key={label} className="card p-6">
             <div className="flex items-center justify-between">
@@ -64,6 +71,47 @@ export default function DashboardPage() {
             </p>
           </div>
         ))}
+      </div>
+
+      {/* Recently solved */}
+      <div className="card mt-8 p-6">
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-ink">Recently solved</h2>
+          <Link
+            to="/problems"
+            className="inline-flex items-center gap-1 text-sm font-medium text-brand transition-opacity hover:opacity-80"
+          >
+            Solve more <ChevronRight size={15} />
+          </Link>
+        </div>
+
+        {!data.recentSolved || data.recentSolved.length === 0 ? (
+          <p className="py-8 text-center text-ink-subtle">
+            Nothing solved yet — mark problems as solved to track progress.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {data.recentSolved.map((row) => (
+              <Link
+                key={row.id}
+                to={`/problems/${row.problem.number}/${row.problem.slug}`}
+                className="flex items-center justify-between rounded-xl border border-line bg-surface-2 p-4 transition-colors hover:border-line-strong"
+              >
+                <span className="flex items-center gap-3">
+                  <CheckCircle2 size={17} className="shrink-0 text-easy" />
+                  <h3 className="font-medium text-ink">{row.problem.title}</h3>
+                </span>
+                <span
+                  className={
+                    badgeClass[row.problem.difficulty] ?? "badge badge-easy"
+                  }
+                >
+                  {row.problem.difficulty}
+                </span>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Recent bookmarks */}

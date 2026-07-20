@@ -27,9 +27,9 @@ export default function Topbar() {
           <p className="text-xs text-ink-subtle">{user?.email}</p>
         </div>
         <img
-          src={avatarDataUri(user?.name ?? "?")}
+          src={user?.avatar || avatarDataUri(user?.name ?? "?")}
           alt=""
-          className="h-9 w-9 rounded-lg"
+          className="h-9 w-9 rounded-lg object-cover"
         />
       </div>
     </header>

@@ -11,6 +11,7 @@ interface User {
   name: string;
   email: string;
   role: string;
+  avatar?: string | null;
 }
 
 interface AuthContextType {
@@ -18,6 +19,8 @@ interface AuthContextType {
   loading: boolean;
   login: (token: string) => void;
   logout: () => void;
+  /** Re-fetch the current user (after a profile update). */
+  refresh: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>(
@@ -81,6 +84,7 @@ export function AuthProvider({
         loading,
         login,
         logout,
+        refresh: loadUser,
       }}
     >
       {children}

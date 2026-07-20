@@ -21,6 +21,14 @@ export const register = async (data: RegisterData) => {
   return response.data;
 };
 
+export const updateMe = async (data: {
+  name?: string;
+  avatar?: string | null;
+}) => {
+  const response = await api.patch("/auth/me", data);
+  return response.data;
+};
+
 export const getCurrentUser = async (token: string) => {
   const response = await api.get("/auth/me", {
     headers: {

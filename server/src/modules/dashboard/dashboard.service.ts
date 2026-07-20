@@ -1,8 +1,19 @@
 import prisma from "../../prisma/prisma";
 
+// Only what the dashboard cards need — never full rows (solutionCode!).
+const problemSummary = {
+  select: {
+    id: true,
+    number: true,
+    title: true,
+    slug: true,
+    difficulty: true,
+  },
+} as const;
+
 class DashboardService {
   async getDashboard(userId: string) {
-    const [totalProblems, bookmarks, votesCast, recentBookmarks] =
+    const [totalProblems, bookmarks, votesCast, solvedCount, recentBookmarks, recentSolved] =
       await Promise.all([
         prisma.problem.count(),
 
@@ -14,9 +25,20 @@ class DashboardService {
           where: { userId },
         }),
 
+        prisma.solvedProblem.count({
+          where: { userId },
+        }),
+
         prisma.bookmark.findMany({
           where: { userId },
-          include: { problem: true },
+          include: { problem: problemSummary },
+          orderBy: { createdAt: "desc" },
+          take: 5,
+        }),
+
+        prisma.solvedProblem.findMany({
+          where: { userId },
+          include: { problem: problemSummary },
           orderBy: { createdAt: "desc" },
           take: 5,
         }),
@@ -26,7 +48,9 @@ class DashboardService {
       totalProblems,
       bookmarks,
       votesCast,
+      solvedCount,
       recentBookmarks,
+      recentSolved,
     };
   }
 }
