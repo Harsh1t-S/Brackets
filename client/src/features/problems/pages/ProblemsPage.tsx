@@ -13,6 +13,7 @@ export default function ProblemsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("search") ?? "");
   const [difficulty, setDifficulty] = useState("");
+  const [sort, setSort] = useState("number");
   const [page, setPage] = useState(1);
   const tag = searchParams.get("tag") ?? "";
 
@@ -41,6 +42,7 @@ export default function ProblemsPage() {
     search: debouncedSearch,
     difficulty,
     tag,
+    sort,
     page,
   });
 
@@ -70,6 +72,26 @@ export default function ProblemsPage() {
           setPage(1);
         }}
       />
+
+      <div className="mb-6 flex items-center gap-2">
+        <label className="text-sm text-ink-muted" htmlFor="problem-sort">
+          Sort by
+        </label>
+        <select
+          id="problem-sort"
+          value={sort}
+          onChange={(e) => {
+            setSort(e.target.value);
+            setPage(1);
+          }}
+          className="rounded-lg border border-line bg-surface px-3 py-1.5 text-sm text-ink outline-none focus:border-brand"
+        >
+          <option value="number">Number</option>
+          <option value="acceptance">Acceptance</option>
+          <option value="likes">Most liked</option>
+          <option value="newest">Newest</option>
+        </select>
+      </div>
 
       {tag && (
         <div className="mb-6 flex items-center gap-2">

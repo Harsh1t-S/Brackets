@@ -49,7 +49,6 @@ export default function FeaturedProblems() {
                 difficulty={problem.difficulty}
                 acceptance={problem.acceptance}
                 tags={problem.tags}
-                premium={problem.premium}
               />
             ))}
           </div>

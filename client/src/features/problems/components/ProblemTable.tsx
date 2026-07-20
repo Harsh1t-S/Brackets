@@ -38,7 +38,6 @@ export default function ProblemTable({ problems }: Props) {
               <th className="px-6 py-3.5 font-semibold">Title</th>
               <th className="px-6 py-3.5 text-center font-semibold">Difficulty</th>
               <th className="px-6 py-3.5 text-center font-semibold">Acceptance</th>
-              <th className="px-6 py-3.5 text-center font-semibold">Premium</th>
               <th className="px-6 py-3.5 font-semibold">Tags</th>
             </tr>
           </thead>
@@ -65,14 +64,6 @@ export default function ProblemTable({ problems }: Props) {
 
                 <td className="px-6 py-4 text-center text-ink-muted">
                   {problem.acceptance}%
-                </td>
-
-                <td className="px-6 py-4 text-center">
-                  {problem.premium ? (
-                    <span className="text-medium">★</span>
-                  ) : (
-                    <span className="text-ink-subtle">—</span>
-                  )}
                 </td>
 
                 <td className="px-6 py-4">

@@ -24,7 +24,6 @@ export interface Problem {
   acceptance: number;
   likes: number;
   dislikes: number;
-  premium: boolean;
 
   createdAt: string;
   updatedAt: string;

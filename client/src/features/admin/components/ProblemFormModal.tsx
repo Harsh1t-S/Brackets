@@ -55,7 +55,6 @@ export default function ProblemFormModal({ open, onClose, editingProblem }: Prop
   const [slug, setSlug] = useState("");
   const [slugEdited, setSlugEdited] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty>("EASY");
-  const [premium, setPremium] = useState(false);
   const [description, setDescription] = useState("");
   const [constraints, setConstraints] = useState("");
   const [tags, setTags] = useState("");
@@ -76,7 +75,6 @@ export default function ProblemFormModal({ open, onClose, editingProblem }: Prop
     setSlug(editingProblem.slug);
     setSlugEdited(true);
     setDifficulty(editingProblem.difficulty);
-    setPremium(editingProblem.premium);
     setDescription(editingProblem.description);
     setConstraints(editingProblem.constraints ?? "");
     setTags(editingProblem.tags.join(", "));
@@ -110,7 +108,6 @@ export default function ProblemFormModal({ open, onClose, editingProblem }: Prop
     setSlug("");
     setSlugEdited(false);
     setDifficulty("EASY");
-    setPremium(false);
     setDescription("");
     setConstraints("");
     setTags("");
@@ -189,7 +186,6 @@ export default function ProblemFormModal({ open, onClose, editingProblem }: Prop
       testCases: testCases.filter((tc) => tc.input.trim() && tc.output.trim()),
       starterCode: toObject(starter),
       solutionCode: toObject(solution),
-      premium,
       acceptance,
     };
 
@@ -314,15 +310,6 @@ export default function ProblemFormModal({ open, onClose, editingProblem }: Prop
                 onChange={(e) => setAcceptance(Number(e.target.value))}
               />
             </div>
-            <label className="flex cursor-pointer items-center gap-3 sm:pt-8">
-              <input
-                type="checkbox"
-                checked={premium}
-                onChange={(e) => setPremium(e.target.checked)}
-                className="h-4 w-4 accent-[var(--color-brand)]"
-              />
-              <span className="text-sm text-ink">Premium problem</span>
-            </label>
           </div>
 
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">

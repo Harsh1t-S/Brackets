@@ -5,7 +5,6 @@ export interface DashboardStats {
   easyProblems: number;
   mediumProblems: number;
   hardProblems: number;
-  premiumProblems: number;
   totalUsers: number;
   totalBookmarks: number;
 }

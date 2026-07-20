@@ -7,7 +7,6 @@ class AdminDashboardService {
       easyProblems,
       mediumProblems,
       hardProblems,
-      premiumProblems,
       totalUsers,
       totalBookmarks,
     ] = await Promise.all([
@@ -31,12 +30,6 @@ class AdminDashboardService {
         },
       }),
 
-      prisma.problem.count({
-        where: {
-          premium: true,
-        },
-      }),
-
       prisma.user.count(),
 
       prisma.bookmark.count(),
@@ -47,7 +40,6 @@ class AdminDashboardService {
       easyProblems,
       mediumProblems,
       hardProblems,
-      premiumProblems,
       totalUsers,
       totalBookmarks,
     };

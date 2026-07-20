@@ -5,6 +5,7 @@ export interface ProblemQuery {
   search?: string;
   difficulty?: string;
   tag?: string;
+  sort?: string;
   page?: number;
   limit?: number;
 }
@@ -21,7 +22,6 @@ export interface PlatformStats {
   easyProblems: number;
   mediumProblems: number;
   hardProblems: number;
-  premiumProblems: number;
   totalTopics: number;
 }
 
@@ -29,6 +29,7 @@ export const getProblems = async ({
   search = "",
   difficulty = "",
   tag = "",
+  sort = "",
   page = 1,
   limit = 10,
 }: ProblemQuery): Promise<ProblemsResponse> => {
@@ -37,6 +38,7 @@ export const getProblems = async ({
       search,
       difficulty,
       tag,
+      sort,
       page,
       limit,
     },

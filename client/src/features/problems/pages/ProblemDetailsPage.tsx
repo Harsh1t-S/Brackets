@@ -114,12 +114,13 @@ export default function ProblemDetailsPage() {
                 {label[problem.difficulty] ?? problem.difficulty}
               </span>
               {problem.tags.map((tag) => (
-                <span
+                <Link
                   key={tag}
-                  className="rounded-md bg-surface-2 px-2.5 py-1 text-xs font-medium text-ink-muted"
+                  to={`/problems?tag=${encodeURIComponent(tag)}`}
+                  className="rounded-md bg-surface-2 px-2.5 py-1 text-xs font-medium text-ink-muted transition-colors hover:bg-brand-soft hover:text-brand"
                 >
                   {tag}
-                </span>
+                </Link>
               ))}
             </div>
 
@@ -129,9 +130,11 @@ export default function ProblemDetailsPage() {
               <div className="mt-4 flex flex-wrap items-center gap-2">
                 <span className="text-sm text-ink-subtle">Asked by</span>
                 {problem.companies.map((c) => (
-                  <span
+                  <Link
                     key={c}
-                    className="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface-2 px-2.5 py-1 text-xs font-medium text-ink"
+                    to={`/problems?search=${encodeURIComponent(c)}`}
+                    title={`All problems asked by ${c}`}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface-2 px-2.5 py-1 text-xs font-medium text-ink transition-colors hover:border-brand/40 hover:text-brand"
                   >
                     <img
                       src={companyLogoUrl(c)}
@@ -143,7 +146,7 @@ export default function ProblemDetailsPage() {
                       }}
                     />
                     {c}
-                  </span>
+                  </Link>
                 ))}
               </div>
             )}

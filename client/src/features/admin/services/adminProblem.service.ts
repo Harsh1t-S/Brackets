@@ -16,7 +16,7 @@ export interface ProblemPayload {
   solutionCode: unknown;
   testCases?: TestCase[];
   tags: string[];
-  premium: boolean;
+  companies?: string[];
   acceptance: number;
 }
 

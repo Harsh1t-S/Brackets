@@ -42,8 +42,6 @@ solutionCode: z.any(),
     .optional()
     .default([]),
 
-  premium: z.boolean().default(false),
-
   acceptance: z
     .number()
     .min(0, "Acceptance cannot be below 0.")

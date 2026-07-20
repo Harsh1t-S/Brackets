@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes, useParams } from "react-router-dom";
 
 import MainLayout from "../layouts/MainLayout";
@@ -11,12 +12,14 @@ import LoginPage from "../../features/auth/pages/LoginPage";
 import RegisterPage from "../../features/auth/pages/RegisterPage";
 import DashboardPage from "../../features/dashboard/pages/DashboardPage";
 import ProfilePage from "../../features/profile/pages/ProfilePage";
-import AdminLayout from "../../features/admin/layouts/AdminLayout";
-
-import AdminDashboard from "../../features/admin/pages/AdminDashboard";
-import ProblemsManagement from "../../features/admin/pages/ProblemsManagement";
-import UsersManagement from "../../features/admin/pages/UsersManagement";
 import BookmarksPage from "../../features/bookmarks/pages/BookmarksPage";
+
+// The admin panel (incl. the Quill editor) is code-split out of the main
+// bundle — regular visitors never download it.
+const AdminLayout = lazy(() => import("../../features/admin/layouts/AdminLayout"));
+const AdminDashboard = lazy(() => import("../../features/admin/pages/AdminDashboard"));
+const ProblemsManagement = lazy(() => import("../../features/admin/pages/ProblemsManagement"));
+const UsersManagement = lazy(() => import("../../features/admin/pages/UsersManagement"));
 import NotFoundPage from "../../components/common/NotFoundPage";
 import ScrollToTop from "../../components/common/ScrollToTop";
 
@@ -35,6 +38,13 @@ export default function AppRouter() {
   return (
     <>
       <ScrollToTop />
+      <Suspense
+        fallback={
+          <div className="flex h-screen items-center justify-center bg-canvas text-ink-muted">
+            Loading…
+          </div>
+        }
+      >
       <Routes>
       {/* Marketing + app pages (with site navbar/footer) */}
       <Route element={<MainLayout />}>
@@ -67,6 +77,7 @@ export default function AppRouter() {
         </Route>
       </Route>
       </Routes>
+      </Suspense>
     </>
   );
 }

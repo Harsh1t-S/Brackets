@@ -18,7 +18,6 @@ export interface CreateProblemInput {
   solutionCode: Prisma.InputJsonValue;
   tags: string[];
   companies?: string[];
-  premium?: boolean;
   acceptance?: number;
   createdById?: string;
   testCases?: TestCaseInput[];
@@ -35,7 +34,6 @@ export interface UpdateProblemInput {
   solutionCode?: Prisma.InputJsonValue;
   tags?: string[];
   companies?: string[];
-  premium?: boolean;
   acceptance?: number;
   testCases?: TestCaseInput[];
 }
@@ -134,7 +132,6 @@ export class AdminProblemService {
         solutionCode: data.solutionCode,
         tags: data.tags,
         companies: data.companies ?? [],
-        premium: data.premium ?? false,
         acceptance: data.acceptance ?? 0,
         createdById: data.createdById,
         testCases: {

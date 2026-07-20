@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowUpRight, Lock } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 
 interface ProblemCardProps {
   number: number;
@@ -8,7 +8,6 @@ interface ProblemCardProps {
   difficulty: "EASY" | "MEDIUM" | "HARD" | string;
   acceptance?: number;
   tags: string[];
-  premium?: boolean;
 }
 
 const badgeClass: Record<string, string> = {
@@ -30,7 +29,6 @@ export default function ProblemCard({
   difficulty,
   acceptance,
   tags,
-  premium,
 }: ProblemCardProps) {
   return (
     <Link
@@ -41,7 +39,6 @@ export default function ProblemCard({
         <h3 className="flex items-center gap-2 text-lg font-semibold text-ink transition-colors group-hover:text-brand">
           <span className="text-ink-subtle">#{number}</span>
           {title}
-          {premium && <Lock size={14} className="text-medium" />}
         </h3>
         <ArrowUpRight
           size={18}

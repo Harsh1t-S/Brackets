@@ -12,7 +12,6 @@ import "./index.css";
 
 import { AuthProvider } from "./features/auth/context/AuthContext";
 import { ToastProvider } from "./components/common/Toast";
-import "react-quill/dist/quill.snow.css";
 
 const queryClient = new QueryClient();
 

@@ -1,4 +1,4 @@
-import { Users, FileCode, Crown, Circle } from "lucide-react";
+import { Users, FileCode, Circle } from "lucide-react";
 import StatCard from "./StatCard";
 import { useDashboardStats } from "../hooks/useDashboardStats";
 
@@ -29,7 +29,6 @@ export default function StatsGrid() {
   const primary = [
     { title: "Users", value: data.totalUsers, icon: Users, tone: "brand" as const },
     { title: "Problems", value: data.totalProblems, icon: FileCode, tone: "accent" as const },
-    { title: "Premium", value: data.premiumProblems, icon: Crown, tone: "medium" as const },
   ];
 
   const byDifficulty = [
@@ -40,7 +39,7 @@ export default function StatsGrid() {
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2">
         {primary.map((item) => (
           <StatCard key={item.title} {...item} />
         ))}

@@ -35,8 +35,6 @@ export interface AdminProblem {
 
   testCases?: TestCase[];
 
-  premium: boolean;
-
   acceptance: number;
   likes: number;
   dislikes: number;

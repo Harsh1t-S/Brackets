@@ -32,7 +32,6 @@ export default function ProblemsTable({ problems, onEdit, onDelete }: Props) {
               <th className="px-6 py-3.5 font-semibold">#</th>
               <th className="px-6 py-3.5 font-semibold">Title</th>
               <th className="px-6 py-3.5 font-semibold">Difficulty</th>
-              <th className="px-6 py-3.5 font-semibold">Premium</th>
               <th className="px-6 py-3.5 text-center font-semibold">Acceptance</th>
               <th className="px-6 py-3.5 text-center font-semibold">Actions</th>
             </tr>
@@ -50,10 +49,6 @@ export default function ProblemsTable({ problems, onEdit, onDelete }: Props) {
                   <span className={badgeClass[problem.difficulty] ?? "badge badge-easy"}>
                     {problem.difficulty}
                   </span>
-                </td>
-
-                <td className="px-6 py-4 text-ink-muted">
-                  {problem.premium ? "Yes" : "No"}
                 </td>
 
                 <td className="px-6 py-4 text-center text-ink-muted">

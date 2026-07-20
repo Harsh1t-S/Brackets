@@ -3,20 +3,31 @@ import { Prisma } from "@prisma/client";
 
 const DIFFICULTIES = new Set(["EASY", "MEDIUM", "HARD"]);
 
+// Whitelisted sort orders — never interpolate user input into ORDER BY.
+const SORTS: Record<string, Prisma.Sql> = {
+  number: Prisma.raw(`"number" ASC`),
+  acceptance: Prisma.raw(`"acceptance" DESC`),
+  likes: Prisma.raw(`"likes" DESC`),
+  newest: Prisma.raw(`"createdAt" DESC`),
+};
+
 export const getProblems = async ({
   page = 1,
   limit = 10,
   search,
   difficulty,
   tag,
+  sort,
 }: {
   page?: number;
   limit?: number;
   search?: string;
   difficulty?: string;
   tag?: string;
+  sort?: string;
 }) => {
   const skip = (page - 1) * limit;
+  const orderBy = SORTS[sort ?? "number"] ?? SORTS.number;
   const filters: Prisma.Sql[] = [];
 
   const term = search?.trim();
@@ -48,11 +59,11 @@ export const getProblems = async ({
     // (or starterCode — the editor loads it from the detail endpoint).
     prisma.$queryRaw`
       SELECT "id", "number", "title", "slug", "difficulty", "tags",
-             "companies", "acceptance", "likes", "dislikes", "premium",
+             "companies", "acceptance", "likes", "dislikes",
              "createdAt", "updatedAt"
       FROM "Problem"
       ${whereSql}
-      ORDER BY "number" ASC
+      ORDER BY ${orderBy}
       LIMIT ${limit} OFFSET ${skip}
     `,
     prisma.$queryRaw<{ count: bigint }[]>`
@@ -151,12 +162,11 @@ export const getMyVote = async (userId: string, problemId: string) => {
 };
 
 export const getStats = async () => {
-  const [total, easy, medium, hard, premium] = await Promise.all([
+  const [total, easy, medium, hard] = await Promise.all([
     prisma.problem.count(),
     prisma.problem.count({ where: { difficulty: "EASY" } }),
     prisma.problem.count({ where: { difficulty: "MEDIUM" } }),
     prisma.problem.count({ where: { difficulty: "HARD" } }),
-    prisma.problem.count({ where: { premium: true } }),
   ]);
 
   // Distinct tags across all problems.
@@ -169,7 +179,6 @@ export const getStats = async () => {
     easyProblems: easy,
     mediumProblems: medium,
     hardProblems: hard,
-    premiumProblems: premium,
     totalTopics: topics.size,
   };
 };

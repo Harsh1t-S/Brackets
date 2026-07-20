@@ -132,6 +132,7 @@ export const list = async (
       search,
       difficulty,
       tag,
+      sort,
     } = req.query;
 
     const result = await getProblems({
@@ -141,6 +142,7 @@ export const list = async (
       search: search as string,
       difficulty: difficulty as string,
       tag: tag as string,
+      sort: sort as string,
     });
 
     res.status(200).json({
