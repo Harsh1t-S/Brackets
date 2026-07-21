@@ -169,7 +169,8 @@ export default function CodeWorkspace({ problem }: Props) {
       </section>
 
       {/* ── Panel: testcases / result ───────────────────────────── */}
-      <section className="card flex shrink-0 flex-col overflow-hidden lg:h-[16rem]">
+      {/* Deliberately short: the editor should get most of the column. */}
+      <section className="card flex shrink-0 flex-col overflow-hidden lg:h-[13rem]">
         <div
           role="tablist"
           aria-label="Console"

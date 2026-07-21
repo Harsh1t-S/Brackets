@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
+import { Tag, Building2, Lightbulb, ChevronDown } from "lucide-react";
 import { useProblem } from "../hooks/useProblem";
 import ProblemTopNav from "../components/ProblemTopNav";
 import ProblemActions from "../components/ProblemActions";
@@ -11,19 +12,13 @@ import { difficultyBadgeClass, difficultyLabel } from "../../../lib/difficulty";
 import { PageLoader } from "../../../components/common/Spinner";
 import { companyLogoUrl } from "../../../lib/companyLogo";
 
-type Tab = "description" | "solution" | "related";
-
-const TABS: { id: Tab; label: string }[] = [
-  { id: "description", label: "Description" },
-  { id: "solution", label: "Solution" },
-  { id: "related", label: "Related" },
-];
+type Pill = "topics" | "companies" | "solution";
 
 export default function ProblemDetailsPage() {
   // `key` may be a number ("1") or a legacy slug ("two-sum").
   const { key = "", slug } = useParams();
   const { data: problem, isLoading, isError } = useProblem(key);
-  const [tab, setTab] = useState<Tab>("description");
+  const [openPill, setOpenPill] = useState<Pill | null>(null);
 
   useDocumentTitle(
     problem ? `${problem.number}. ${problem.title}` : "Problem"
@@ -43,7 +38,7 @@ export default function ProblemDetailsPage() {
 
   if (isError || !problem) {
     return (
-      <div className="flex h-96 flex-col items-center justify-center gap-4">
+      <div className="flex h-screen flex-col items-center justify-center gap-4 bg-canvas">
         <p className="text-hard">Problem not found.</p>
         <Link to="/problems" className="btn btn-secondary px-4 py-2 text-sm">
           Back to problems
@@ -52,87 +47,153 @@ export default function ProblemDetailsPage() {
     );
   }
 
+  const toggle = (p: Pill) => setOpenPill((cur) => (cur === p ? null : p));
+
+  const pill =
+    "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors";
+  const pillIdle =
+    "border-line bg-surface-2 text-ink-muted hover:text-ink";
+  const pillOpen = "border-brand/40 bg-brand-soft text-brand";
+
   return (
-    <div className="mx-auto max-w-[1600px] px-4 py-4 sm:px-6">
+    <div className="flex min-h-screen flex-col bg-canvas lg:h-screen lg:overflow-hidden">
       <ProblemTopNav problemId={problem.id} />
 
-      {/* Three panels: statement | code | testcases. On large screens each
-          scrolls independently so the page itself never moves. */}
-      <div className="grid gap-4 lg:h-[calc(100vh-9.5rem)] lg:grid-cols-2">
-        {/* ── Panel: statement ──────────────────────────────────── */}
-        <section className="card flex flex-col overflow-hidden lg:min-h-0">
-          {/* Tab strip pinned to the top of the panel */}
-          <div
-            role="tablist"
-            aria-label="Problem sections"
-            className="flex shrink-0 items-center gap-5 border-b border-line bg-surface-2 px-5"
-          >
-            {TABS.map((t) => (
-              <button
-                key={t.id}
-                role="tab"
-                aria-selected={tab === t.id}
-                onClick={() => setTab(t.id)}
-                className={`-mb-px border-b-2 py-2.5 text-sm font-medium transition-colors ${
-                  tab === t.id
-                    ? "border-brand text-ink"
-                    : "border-transparent text-ink-subtle hover:text-ink-muted"
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
-            {/* Header: title, one quiet meta line, one action row. */}
-            <h1 className="flex flex-wrap items-center gap-3 text-2xl font-bold tracking-tight text-ink">
-              <span>
+      <main className="flex-1 p-3 lg:min-h-0">
+        {/* Statement | code | testcases — the code column is a touch
+            narrower so long lines still fit but the statement breathes. */}
+        <div className="grid gap-3 lg:h-full lg:grid-cols-[1.15fr_0.85fr]">
+          {/* ── Panel: statement ────────────────────────────────── */}
+          <section className="card flex flex-col overflow-hidden lg:min-h-0">
+            <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+              <h1 className="text-2xl font-bold tracking-tight text-ink">
                 <span className="mr-2 text-ink-subtle">#{problem.number}</span>
                 {problem.title}
-              </span>
-              <span className={difficultyBadgeClass(problem.difficulty)}>
-                {difficultyLabel(problem.difficulty)}
-              </span>
-            </h1>
+              </h1>
 
-            <div className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ink-subtle">
-              <span>{problem.acceptance}% acceptance</span>
-              {problem.tags.length > 0 && <span aria-hidden>·</span>}
-              {problem.tags.map((tag, i) => (
-                <span key={tag} className="flex items-center gap-2">
-                  <Link
-                    to={`/problems?tags=${encodeURIComponent(tag)}`}
-                    className="text-ink-muted transition-colors hover:text-brand"
-                  >
-                    {tag}
-                  </Link>
-                  {i < problem.tags.length - 1 && <span aria-hidden>·</span>}
+              {/* Collapsible pills keep topics/companies/solution one click
+                  away without crowding the statement. */}
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className={difficultyBadgeClass(problem.difficulty)}>
+                  {difficultyLabel(problem.difficulty)}
                 </span>
-              ))}
-            </div>
 
-            <ProblemActions problem={problem} />
+                {problem.tags.length > 0 && (
+                  <button
+                    onClick={() => toggle("topics")}
+                    aria-expanded={openPill === "topics"}
+                    className={`${pill} ${
+                      openPill === "topics" ? pillOpen : pillIdle
+                    }`}
+                  >
+                    <Tag size={12} /> Topics
+                    <ChevronDown
+                      size={12}
+                      className={openPill === "topics" ? "rotate-180" : ""}
+                    />
+                  </button>
+                )}
 
-            <div className="mt-6 border-t border-line pt-6">
-            {tab === "description" && (
-              <>
+                {problem.companies && problem.companies.length > 0 && (
+                  <button
+                    onClick={() => toggle("companies")}
+                    aria-expanded={openPill === "companies"}
+                    className={`${pill} ${
+                      openPill === "companies" ? pillOpen : pillIdle
+                    }`}
+                  >
+                    <Building2 size={12} /> Companies
+                    <ChevronDown
+                      size={12}
+                      className={openPill === "companies" ? "rotate-180" : ""}
+                    />
+                  </button>
+                )}
+
+                <button
+                  onClick={() => toggle("solution")}
+                  aria-expanded={openPill === "solution"}
+                  className={`${pill} ${
+                    openPill === "solution" ? pillOpen : pillIdle
+                  }`}
+                >
+                  <Lightbulb size={12} /> Solution
+                  <ChevronDown
+                    size={12}
+                    className={openPill === "solution" ? "rotate-180" : ""}
+                  />
+                </button>
+
+                <span className="ml-auto text-xs text-ink-subtle">
+                  {problem.acceptance}% acceptance
+                </span>
+              </div>
+
+              {/* Expanded pill content */}
+              {openPill === "topics" && (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {problem.tags.map((tag) => (
+                    <Link
+                      key={tag}
+                      to={`/problems?tags=${encodeURIComponent(tag)}`}
+                      className="rounded-md bg-surface-2 px-2.5 py-1 text-xs font-medium text-ink-muted transition-colors hover:bg-brand-soft hover:text-brand"
+                    >
+                      {tag}
+                    </Link>
+                  ))}
+                </div>
+              )}
+
+              {openPill === "companies" && problem.companies && (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {problem.companies.map((c) => (
+                    <Link
+                      key={c}
+                      to={`/problems?companies=${encodeURIComponent(c)}`}
+                      title={`All problems asked by ${c}`}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface-2 px-2.5 py-1 text-xs font-medium text-ink transition-colors hover:border-brand/40 hover:text-brand"
+                    >
+                      <img
+                        src={companyLogoUrl(c)}
+                        alt=""
+                        loading="lazy"
+                        className="h-3.5 w-3.5 rounded-sm"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
+                      {c}
+                    </Link>
+                  ))}
+                </div>
+              )}
+
+              {openPill === "solution" && (
+                <div className="mt-3">
+                  <SolutionPanel problem={problem} />
+                </div>
+              )}
+
+              <ProblemActions problem={problem} />
+
+              <div className="mt-5 border-t border-line pt-5">
                 <div
                   className="prose prose-invert max-w-none prose-pre:bg-surface-2 prose-code:text-brand"
                   dangerouslySetInnerHTML={{ __html: problem.description }}
                 />
 
                 {problem.constraints && (
-                  <div className="mt-6 whitespace-pre-wrap rounded-xl border border-line bg-surface-2 p-4 font-mono text-sm leading-6 text-ink-muted">
-                    {/* Constraints read as part of the statement, not a section */}
-                    <span
+                  <div className="mt-6">
+                    <p className="mb-2 text-sm font-semibold text-ink">
+                      Constraints
+                    </p>
+                    <div
+                      className="whitespace-pre-wrap border-l-2 border-line pl-4 font-mono text-sm leading-6 text-ink-muted"
                       dangerouslySetInnerHTML={{ __html: problem.constraints }}
                     />
                   </div>
                 )}
 
-                {/* Light treatment (bold label + rule) rather than a boxed
-                    card each — three stacked cards read as clutter. */}
                 <div className="mt-8 space-y-6">
                   {problem.examples.map((example, index) => (
                     <div key={index}>
@@ -160,45 +221,22 @@ export default function ProblemDetailsPage() {
                     </div>
                   ))}
                 </div>
+              </div>
 
-                {/* Companies are context, not a headline — keep them last. */}
-                {problem.companies && problem.companies.length > 0 && (
-                  <div className="mt-8 flex flex-wrap items-center gap-2 border-t border-line pt-5">
-                    <span className="text-sm text-ink-subtle">Asked by</span>
-                    {problem.companies.map((c) => (
-                      <Link
-                        key={c}
-                        to={`/problems?companies=${encodeURIComponent(c)}`}
-                        title={`All problems asked by ${c}`}
-                        className="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface-2 px-2.5 py-1 text-xs font-medium text-ink transition-colors hover:border-brand/40 hover:text-brand"
-                      >
-                        <img
-                          src={companyLogoUrl(c)}
-                          alt=""
-                          loading="lazy"
-                          className="h-3.5 w-3.5 rounded-sm"
-                          onError={(e) => {
-                            e.currentTarget.style.display = "none";
-                          }}
-                        />
-                        {c}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-
-            {tab === "solution" && <SolutionPanel problem={problem} />}
-
-            {tab === "related" && <ProblemNav problemId={problem.id} />}
+              {/* Related problems close out the statement column. */}
+              <div className="mt-10 border-t border-line pt-5">
+                <p className="mb-3 text-sm font-semibold text-ink">
+                  Related problems
+                </p>
+                <ProblemNav problemId={problem.id} />
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* ── Panels: code + testcases ───────────────────────────── */}
-        <CodeWorkspace problem={problem} />
-      </div>
+          {/* ── Panels: code + testcases ──────────────────────────── */}
+          <CodeWorkspace problem={problem} />
+        </div>
+      </main>
     </div>
   );
 }

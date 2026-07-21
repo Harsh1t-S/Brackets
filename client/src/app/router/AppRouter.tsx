@@ -56,7 +56,6 @@ export default function AppRouter() {
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/problems" element={<ProblemsPage />} />
-        <Route path="/problems/:key/:slug?" element={<ProblemDetailsPage />} />
         <Route path="/:key" element={<ProblemShortcut />} />
 
         <Route element={<RequireAuth />}>
@@ -67,6 +66,10 @@ export default function AppRouter() {
 
         <Route path="*" element={<NotFoundPage />} />
       </Route>
+
+      {/* Solve view: full-screen workspace with its own slim bar — no site
+          navbar/footer so the panels own the whole viewport. */}
+      <Route path="/problems/:key/:slug?" element={<ProblemDetailsPage />} />
 
       {/* Standalone auth screens (no site chrome, signed-in users bounced) */}
       <Route element={<GuestOnly />}>

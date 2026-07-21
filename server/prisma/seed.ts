@@ -56,6 +56,7 @@ const problems: Array<{
         "function twoSum(nums, target) {\n  const map = new Map();\n  for (let i = 0; i < nums.length; i++) {\n    const diff = target - nums[i];\n    if (map.has(diff)) return [map.get(diff), i];\n    map.set(nums[i], i);\n  }\n}",
     },
     tags: ["Array", "Hash Map"],
+    companies: ["Amazon", "Google", "Apple", "Adobe"],
     testCases: [
       { input: "nums = [2,7,11,15], target = 9", output: "[0,1]" },
       { input: "nums = [3,2,4], target = 6", output: "[1,2]" },
@@ -95,6 +96,7 @@ const problems: Array<{
         "function isPalindrome(x) {\n  const s = String(x);\n  return s === [...s].reverse().join('');\n}",
     },
     tags: ["Math"],
+    companies: ["Amazon", "Adobe", "Bloomberg"],
     testCases: [
       { input: "x = 121", output: "true" },
       { input: "x = -121", output: "false" },
@@ -124,6 +126,7 @@ const problems: Array<{
         "function isValid(s) {\n  const stack = [];\n  const map = { ')': '(', ']': '[', '}': '{' };\n  for (const c of s) {\n    if (!map[c]) stack.push(c);\n    else if (stack.pop() !== map[c]) return false;\n  }\n  return stack.length === 0;\n}",
     },
     tags: ["String", "Stack"],
+    companies: ["Amazon", "Meta", "Microsoft", "Bloomberg"],
     testCases: [
       { input: 's = "()[]{}"', output: "true" },
       { input: 's = "(]"', output: "false" },
@@ -161,6 +164,7 @@ const problems: Array<{
         "function lengthOfLongestSubstring(s) {\n  const seen = new Map();\n  let start = 0, max = 0;\n  for (let i = 0; i < s.length; i++) {\n    if (seen.has(s[i]) && seen.get(s[i]) >= start) start = seen.get(s[i]) + 1;\n    seen.set(s[i], i);\n    max = Math.max(max, i - start + 1);\n  }\n  return max;\n}",
     },
     tags: ["String", "Sliding Window", "Hash Map"],
+    companies: ["Amazon", "Adobe", "Bloomberg"],
     testCases: [
       { input: 's = "abcabcbb"', output: "3" },
       { input: 's = "bbbbb"', output: "1" },
@@ -190,6 +194,7 @@ const problems: Array<{
     },
     solutionCode: {},
     tags: ["Linked List", "Math", "Recursion"],
+    companies: ["Amazon", "Microsoft", "Bloomberg"],
     testCases: [
       { input: "l1 = [2,4,3], l2 = [5,6,4]", output: "[7,0,8]" },
       { input: "l1 = [0], l2 = [0]", output: "[0]", isHidden: true },
@@ -224,6 +229,7 @@ const problems: Array<{
     },
     solutionCode: {},
     tags: ["Graph", "Topological Sort", "BFS"],
+    companies: ["Amazon", "Google", "Meta"],
     testCases: [
       { input: "numCourses = 2, prerequisites = [[1,0]]", output: "true" },
       {
@@ -255,6 +261,7 @@ const problems: Array<{
     },
     solutionCode: {},
     tags: ["Linked List", "Heap", "Divide and Conquer"],
+    companies: ["Amazon", "Google", "Microsoft", "Uber"],
     testCases: [
       {
         input: "lists = [[1,4,5],[1,3,4],[2,6]]",
@@ -288,6 +295,7 @@ const problems: Array<{
     },
     solutionCode: {},
     tags: ["Array", "Binary Search", "Divide and Conquer"],
+    companies: ["Google", "Amazon", "Adobe"],
     testCases: [
       { input: "nums1 = [1,3], nums2 = [2]", output: "2.00000" },
       {

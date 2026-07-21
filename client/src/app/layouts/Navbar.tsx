@@ -39,15 +39,14 @@ export default function Navbar() {
     return () => document.removeEventListener("keydown", onKey);
   }, [open]);
 
+  // Browsing lives on the left; "my stuff" sits on the right next to the
+  // avatar, so personal pages read as part of the account area.
   const links = [
     { to: "/problems", label: "Problems" },
-    ...(user
-      ? [
-          { to: "/bookmarks", label: "Bookmarks" },
-          { to: "/dashboard", label: "Dashboard" },
-        ]
-      : []),
+    ...(user ? [{ to: "/bookmarks", label: "Bookmarks" }] : []),
   ];
+
+  const accountLinks = user ? [{ to: "/dashboard", label: "Dashboard" }] : [];
 
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-canvas/80 backdrop-blur-md">
@@ -78,7 +77,12 @@ export default function Navbar() {
                 </Link>
               </div>
             ) : (
-              <div className="hidden sm:block">
+              <div className="hidden items-center gap-1 sm:flex">
+                {accountLinks.map((l) => (
+                  <NavLink key={l.to} to={l.to} className={navClass}>
+                    {l.label}
+                  </NavLink>
+                ))}
                 <UserMenu />
               </div>
             )}
@@ -103,7 +107,7 @@ export default function Navbar() {
         <div id="mobile-menu" className="border-t border-line bg-canvas md:hidden">
           <Container>
             <nav className="flex flex-col gap-1 py-3">
-              {links.map((l) => (
+              {[...links, ...accountLinks].map((l) => (
                 <NavLink
                   key={l.to}
                   to={l.to}
