@@ -42,3 +42,4 @@ The client's API base URL lives in `client/src/lib/axios.ts`.
 | client | `npm run dev` / `build` / `lint` | Vite dev server / production build / ESLint |
 | server | `npm run dev` / `build` / `start` | tsx watch / tsc / run compiled build |
 | server | `npx prisma db seed` | Upsert the seed problem set |
+.
