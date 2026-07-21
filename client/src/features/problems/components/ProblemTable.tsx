@@ -1,12 +1,14 @@
 import type { AdminProblem } from "../../../types/adminProblem";
 import { Link } from "react-router-dom";
+import { CheckCircle2 } from "lucide-react";
 import {
   difficultyBadgeClass,
   difficultyLabel,
 } from "../../../lib/difficulty";
 
 interface Props {
-  problems: AdminProblem[];
+  // `solved` is only present for signed-in users.
+  problems: (AdminProblem & { solved?: boolean })[];
 }
 
 export default function ProblemTable({ problems }: Props) {
@@ -25,6 +27,9 @@ export default function ProblemTable({ problems }: Props) {
           <thead>
             <tr className="border-b border-line bg-surface-2 text-left text-xs uppercase tracking-wide text-ink-subtle">
               <th className="px-6 py-3.5 font-semibold">#</th>
+              <th className="w-10 px-2 py-3.5 font-semibold">
+                <span className="sr-only">Solved</span>
+              </th>
               <th className="px-6 py-3.5 font-semibold">Title</th>
               <th className="px-6 py-3.5 text-center font-semibold">Difficulty</th>
               <th className="px-6 py-3.5 text-center font-semibold">Acceptance</th>
@@ -39,6 +44,15 @@ export default function ProblemTable({ problems }: Props) {
                 className="group relative transition-colors hover:bg-surface-2 focus-within:bg-surface-2"
               >
                 <td className="px-6 py-4 text-ink-subtle">{problem.number}</td>
+                <td className="px-2 py-4">
+                  {problem.solved && (
+                    <CheckCircle2
+                      size={16}
+                      className="text-easy"
+                      aria-label="Solved"
+                    />
+                  )}
+                </td>
                 <td className="px-6 py-4 font-medium text-ink">
                   {/* Real link (keyboard, middle-click, open-in-new-tab). The
                       stretched ::after makes the whole row a click target. */}

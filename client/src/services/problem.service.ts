@@ -3,11 +3,25 @@ import type { Problem } from "../types/problem";
 
 export interface ProblemQuery {
   search?: string;
-  difficulty?: string;
-  tag?: string;
+  /** Combinable filters — sent as comma-separated lists. */
+  difficulties?: string[];
+  tags?: string[];
+  companies?: string[];
+  match?: "all" | "any";
+  status?: string;
   sort?: string;
   page?: number;
   limit?: number;
+}
+
+export interface FilterFacet {
+  value: string;
+  count: number;
+}
+
+export interface FilterFacets {
+  tags: FilterFacet[];
+  companies: FilterFacet[];
 }
 
 export interface ProblemsResponse {
@@ -27,8 +41,11 @@ export interface PlatformStats {
 
 export const getProblems = async ({
   search = "",
-  difficulty = "",
-  tag = "",
+  difficulties = [],
+  tags = [],
+  companies = [],
+  match = "any",
+  status = "",
   sort = "",
   page = 1,
   limit = 10,
@@ -36,14 +53,23 @@ export const getProblems = async ({
   const response = await api.get("/problems", {
     params: {
       search,
-      difficulty,
-      tag,
+      // Omit empty lists so the URL stays clean.
+      ...(difficulties.length && { difficulty: difficulties.join(",") }),
+      ...(tags.length && { tags: tags.join(",") }),
+      ...(companies.length && { companies: companies.join(",") }),
+      ...(tags.length + companies.length > 1 && { match }),
+      ...(status && { status }),
       sort,
       page,
       limit,
     },
   });
 
+  return response.data.data;
+};
+
+export const getFilterFacets = async (): Promise<FilterFacets> => {
+  const response = await api.get("/problems/filters");
   return response.data.data;
 };
 

@@ -1,25 +1,45 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { SearchX, X } from "lucide-react";
-import ProblemFilters from "../pages/ProblemFilters";
-import { useProblems } from "../hooks/useProblems";
+import { SearchX } from "lucide-react";
+import AdvancedFilters, {
+  type FilterState,
+} from "../components/AdvancedFilters";
+import { useProblems, useFilterFacets } from "../hooks/useProblems";
 import ProblemTable from "../components/ProblemTable";
 import Pagination from "../../../components/common/Pagination";
 import ErrorState from "../../../components/common/ErrorState";
 import { useDebounce } from "../../../hooks/useDebounce";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
+import { useAuth } from "../../auth/context/AuthContext";
+
+/** Read a repeatable filter out of the URL ("a,b" -> ["a","b"]). */
+function readList(params: URLSearchParams, key: string): string[] {
+  const raw = params.get(key);
+  return raw ? raw.split(",").map((v) => v.trim()).filter(Boolean) : [];
+}
 
 export default function ProblemsPage() {
   useDocumentTitle("Problems");
   const [searchParams, setSearchParams] = useSearchParams();
+  const { user } = useAuth();
 
   // Search is a controlled input (debounced); everything else is read straight
-  // from the URL so difficulty/sort/page are shareable and survive reloads.
+  // from the URL so every filter is shareable and survives reloads.
   const [search, setSearch] = useState(searchParams.get("search") ?? "");
-  const difficulty = searchParams.get("difficulty") ?? "";
   const sort = searchParams.get("sort") ?? "number";
   const page = Number(searchParams.get("page")) || 1;
-  const tag = searchParams.get("tag") ?? "";
+
+  // `tag` (singular) is still produced by topic links elsewhere in the app.
+  const tags = [...new Set([...readList(searchParams, "tag"), ...readList(searchParams, "tags")])];
+
+  const filterState: FilterState = {
+    search,
+    difficulties: readList(searchParams, "difficulty"),
+    tags,
+    companies: readList(searchParams, "companies"),
+    match: searchParams.get("match") === "all" ? "all" : "any",
+    status: searchParams.get("status") ?? "",
+  };
 
   // Merge a mutation into the URL params. Resets to page 1 unless told not to.
   function updateParams(
@@ -32,34 +52,68 @@ export default function ProblemsPage() {
     setSearchParams(next, { replace: true });
   }
 
+  /** Write a list filter back to the URL, dropping it when empty. */
+  function setList(next: URLSearchParams, key: string, values: string[]) {
+    if (values.length) next.set(key, values.join(","));
+    else next.delete(key);
+  }
+
+  function applyFilters(patch: Partial<FilterState>) {
+    if (patch.search !== undefined) {
+      setSearch(patch.search);
+      return; // the debounce effect syncs the URL
+    }
+    updateParams((next) => {
+      if (patch.difficulties) setList(next, "difficulty", patch.difficulties);
+      if (patch.tags) {
+        // Collapse the legacy singular param into the canonical one.
+        next.delete("tag");
+        setList(next, "tags", patch.tags);
+      }
+      if (patch.companies) setList(next, "companies", patch.companies);
+      if (patch.match) next.set("match", patch.match);
+      if (patch.status !== undefined) {
+        if (patch.status) next.set("status", patch.status);
+        else next.delete("status");
+      }
+    });
+  }
+
   // Keep the URL ?search= in sync with the debounced input.
+  const debouncedSearch = useDebounce(search);
   useEffect(() => {
     const current = searchParams.get("search") ?? "";
-    if (search !== current) {
+    if (debouncedSearch !== current) {
       updateParams((next) => {
-        if (search) next.set("search", search);
+        if (debouncedSearch) next.set("search", debouncedSearch);
         else next.delete("search");
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search]);
-
-  function clearTag() {
-    updateParams((next) => next.delete("tag"));
-  }
+  }, [debouncedSearch]);
 
   function clearAllFilters() {
     setSearch("");
     setSearchParams(new URLSearchParams(), { replace: true });
   }
 
-  const debouncedSearch = useDebounce(search);
-  const hasActiveFilters = !!(debouncedSearch || difficulty || tag);
+  const hasActiveFilters = !!(
+    debouncedSearch ||
+    filterState.difficulties.length ||
+    filterState.tags.length ||
+    filterState.companies.length ||
+    filterState.status
+  );
+
+  const { data: facets } = useFilterFacets();
 
   const { data, isLoading, isError, refetch } = useProblems({
     search: debouncedSearch,
-    difficulty,
-    tag,
+    difficulties: filterState.difficulties,
+    tags: filterState.tags,
+    companies: filterState.companies,
+    match: filterState.match,
+    status: filterState.status,
     sort,
     page,
   });
@@ -73,21 +127,19 @@ export default function ProblemsPage() {
         </h1>
         <p className="mt-2 text-ink-muted">
           {data
-            ? `${data.total} problems to sharpen your skills`
+            ? `${data.total} problem${data.total === 1 ? "" : "s"} ${
+                hasActiveFilters ? "match your filters" : "to sharpen your skills"
+              }`
             : "Browse the full problem set"}
         </p>
       </div>
 
-      <ProblemFilters
-        search={search}
-        difficulty={difficulty}
-        onSearchChange={setSearch}
-        onDifficultyChange={(value) =>
-          updateParams((next) => {
-            if (value) next.set("difficulty", value);
-            else next.delete("difficulty");
-          })
-        }
+      <AdvancedFilters
+        state={filterState}
+        facets={facets}
+        canFilterByStatus={!!user}
+        onChange={applyFilters}
+        onClearAll={clearAllFilters}
       />
 
       <div className="mb-6 flex items-center gap-2">
@@ -108,18 +160,6 @@ export default function ProblemsPage() {
           <option value="newest">Newest</option>
         </select>
       </div>
-
-      {tag && (
-        <div className="mb-6 flex items-center gap-2">
-          <span className="text-sm text-ink-muted">Filtering by topic:</span>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-3 py-1 text-sm font-medium text-brand">
-            {tag}
-            <button onClick={clearTag} aria-label="Clear topic filter">
-              <X size={14} />
-            </button>
-          </span>
-        </div>
-      )}
 
       {/* States */}
       {isLoading && (

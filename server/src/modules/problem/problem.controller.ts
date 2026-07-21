@@ -7,6 +7,7 @@ import {
   getMyVote,
   toggleSolved,
   getMySolved,
+  getFilterFacets,
 } from "./problem.service";
 import { voteSchema } from "./problem.validation";
 import { asyncHandler } from "../../utils/asyncHandler";
@@ -63,20 +64,48 @@ export const stats = asyncHandler(async (_req: Request, res: Response) => {
   res.status(200).json({ success: true, data: result });
 });
 
+/** "a,b" | ["a","b"] -> ["a","b"] (trimmed, de-duped, capped). */
+function toList(value: unknown): string[] {
+  const raw = Array.isArray(value) ? value : [value];
+  const parts = raw
+    .filter((v): v is string => typeof v === "string")
+    .flatMap((v) => v.split(","))
+    .map((v) => v.trim())
+    .filter(Boolean);
+  return [...new Set(parts)].slice(0, 25);
+}
+
+const STATUSES = new Set(["solved", "unsolved", "bookmarked"]);
+
 export const list = asyncHandler(async (req: Request, res: Response) => {
-  const { page, limit, search, difficulty, tag, sort } = req.query;
+  const { page, limit, search, difficulty, tag, tags, companies, match, status, sort } =
+    req.query;
+
+  const statusValue = typeof status === "string" && STATUSES.has(status)
+    ? (status as "solved" | "unsolved" | "bookmarked")
+    : undefined;
 
   const result = await getProblems({
     page: Math.max(Number(page) || 1, 1),
     // Cap the page size so one request can't dump the whole set.
     limit: Math.min(Math.max(Number(limit) || 10, 1), 100),
     search: search as string,
-    difficulty: difficulty as string,
-    tag: tag as string,
+    difficulties: toList(difficulty),
+    // `tag` (singular) kept for the older links that point at one topic.
+    tags: [...new Set([...toList(tag), ...toList(tags)])],
+    companies: toList(companies),
+    match: match === "all" ? "all" : "any",
+    status: statusValue,
     sort: sort as string,
+    userId: req.user?.id,
   });
 
   res.status(200).json({ success: true, data: result });
+});
+
+export const filters = asyncHandler(async (_req: Request, res: Response) => {
+  const data = await getFilterFacets();
+  res.status(200).json({ success: true, data });
 });
 
 export const details = asyncHandler(

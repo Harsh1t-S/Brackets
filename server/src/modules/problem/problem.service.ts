@@ -11,20 +11,35 @@ const SORTS: Record<string, Prisma.Sql> = {
   newest: Prisma.raw(`"createdAt" DESC`),
 };
 
+/** `["a","b"]` -> SQL `ARRAY['a','b']::text[]` (values stay bound params). */
+const textArray = (values: string[]) =>
+  Prisma.sql`ARRAY[${Prisma.join(values.map((v) => Prisma.sql`${v}`))}]::text[]`;
+
 export const getProblems = async ({
   page = 1,
   limit = 10,
   search,
-  difficulty,
-  tag,
+  difficulties = [],
+  tags = [],
+  companies = [],
+  match = "any",
+  status,
   sort,
+  userId,
 }: {
   page?: number;
   limit?: number;
   search?: string;
-  difficulty?: string;
-  tag?: string;
+  /** Combinable difficulty filters — empty means "all". */
+  difficulties?: string[];
+  tags?: string[];
+  companies?: string[];
+  /** How to combine multiple tags/companies: every one, or any one. */
+  match?: "all" | "any";
+  /** Personal filters — need a signed-in user, ignored otherwise. */
+  status?: "solved" | "unsolved" | "bookmarked";
   sort?: string;
+  userId?: string;
 }) => {
   const skip = (page - 1) * limit;
   const orderBy = SORTS[sort ?? "number"] ?? SORTS.number;
@@ -42,12 +57,43 @@ export const getProblems = async ({
     )`);
   }
 
-  if (difficulty && DIFFICULTIES.has(difficulty)) {
-    filters.push(Prisma.sql`"difficulty" = ${difficulty}::"Difficulty"`);
+  const validDifficulties = difficulties.filter((d) => DIFFICULTIES.has(d));
+  if (validDifficulties.length) {
+    filters.push(
+      Prisma.sql`"difficulty"::text = ANY(${textArray(validDifficulties)})`
+    );
   }
 
-  if (tag) {
-    filters.push(Prisma.sql`${tag} = ANY("tags")`);
+  // `@>` = has every selected value, `&&` = overlaps any of them.
+  if (tags.length) {
+    filters.push(
+      match === "all"
+        ? Prisma.sql`"tags" @> ${textArray(tags)}`
+        : Prisma.sql`"tags" && ${textArray(tags)}`
+    );
+  }
+
+  if (companies.length) {
+    filters.push(
+      match === "all"
+        ? Prisma.sql`"companies" @> ${textArray(companies)}`
+        : Prisma.sql`"companies" && ${textArray(companies)}`
+    );
+  }
+
+  if (userId && status) {
+    const solvedExists = Prisma.sql`EXISTS (
+      SELECT 1 FROM "SolvedProblem" sp
+      WHERE sp."problemId" = "Problem"."id" AND sp."userId" = ${userId}
+    )`;
+    if (status === "solved") filters.push(solvedExists);
+    if (status === "unsolved") filters.push(Prisma.sql`NOT ${solvedExists}`);
+    if (status === "bookmarked") {
+      filters.push(Prisma.sql`EXISTS (
+        SELECT 1 FROM "Bookmark" bm
+        WHERE bm."problemId" = "Problem"."id" AND bm."userId" = ${userId}
+      )`);
+    }
   }
 
   const whereSql = filters.length
@@ -60,7 +106,16 @@ export const getProblems = async ({
     prisma.$queryRaw`
       SELECT "id", "number", "title", "slug", "difficulty", "tags",
              "companies", "acceptance", "likes", "dislikes",
-             "createdAt", "updatedAt"
+             "createdAt", "updatedAt",
+             ${
+               userId
+                 ? Prisma.sql`EXISTS (
+                     SELECT 1 FROM "SolvedProblem" sp2
+                     WHERE sp2."problemId" = "Problem"."id"
+                       AND sp2."userId" = ${userId}
+                   )`
+                 : Prisma.sql`false`
+             } AS "solved"
       FROM "Problem"
       ${whereSql}
       ORDER BY ${orderBy}
@@ -80,6 +135,30 @@ export const getProblems = async ({
     page,
     totalPages: Math.ceil(total / limit),
   };
+};
+
+/**
+ * Every tag and company in use, with problem counts — powers the filter
+ * panel so users pick from real values instead of guessing.
+ */
+export const getFilterFacets = async () => {
+  const [tags, companies] = await Promise.all([
+    prisma.$queryRaw<{ value: string; count: bigint }[]>`
+      SELECT tg AS value, COUNT(*)::bigint AS count
+      FROM "Problem", unnest("tags") AS tg
+      GROUP BY tg ORDER BY count DESC, value ASC
+    `,
+    prisma.$queryRaw<{ value: string; count: bigint }[]>`
+      SELECT co AS value, COUNT(*)::bigint AS count
+      FROM "Problem", unnest("companies") AS co
+      GROUP BY co ORDER BY count DESC, value ASC
+    `,
+  ]);
+
+  const toPlain = (rows: { value: string; count: bigint }[]) =>
+    rows.map((r) => ({ value: r.value, count: Number(r.count) }));
+
+  return { tags: toPlain(tags), companies: toPlain(companies) };
 };
 
 /** Fetch by problem number ("1") or slug ("two-sum"). */
