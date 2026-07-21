@@ -8,43 +8,7 @@ import CodeWorkspace from "../components/CodeWorkspace";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
 import { difficultyBadgeClass, difficultyLabel } from "../../../lib/difficulty";
 import { PageLoader } from "../../../components/common/Spinner";
-
-// Known company -> domain map for logo lookup; anything unknown falls back
-// to a guessed "<name>.com" (the favicon service returns a generic globe
-// for bad domains, and we hide the img entirely on load error).
-const companyDomains: Record<string, string> = {
-  google: "google.com",
-  amazon: "amazon.com",
-  meta: "meta.com",
-  facebook: "facebook.com",
-  microsoft: "microsoft.com",
-  apple: "apple.com",
-  adobe: "adobe.com",
-  bloomberg: "bloomberg.com",
-  uber: "uber.com",
-  linkedin: "linkedin.com",
-  netflix: "netflix.com",
-  yelp: "yelp.com",
-  palantir: "palantir.com",
-  oracle: "oracle.com",
-  salesforce: "salesforce.com",
-  airbnb: "airbnb.com",
-  stripe: "stripe.com",
-  spotify: "spotify.com",
-  twitter: "x.com",
-  x: "x.com",
-  tesla: "tesla.com",
-  nvidia: "nvidia.com",
-  intel: "intel.com",
-  ibm: "ibm.com",
-  "goldman sachs": "goldmansachs.com",
-};
-
-function companyLogoUrl(name: string): string {
-  const key = name.trim().toLowerCase();
-  const domain = companyDomains[key] ?? `${key.replace(/\s+/g, "")}.com`;
-  return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
-}
+import { companyLogoUrl } from "../../../lib/companyLogo";
 
 export default function ProblemDetailsPage() {
   // `key` may be a number ("1") or a legacy slug ("two-sum").
@@ -119,7 +83,7 @@ export default function ProblemDetailsPage() {
                 {problem.companies.map((c) => (
                   <Link
                     key={c}
-                    to={`/problems?search=${encodeURIComponent(c)}`}
+                    to={`/problems?companies=${encodeURIComponent(c)}`}
                     title={`All problems asked by ${c}`}
                     className="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface-2 px-2.5 py-1 text-xs font-medium text-ink transition-colors hover:border-brand/40 hover:text-brand"
                   >
