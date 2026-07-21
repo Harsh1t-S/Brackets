@@ -31,13 +31,27 @@ export const toggleBookmark = async (
   return { bookmarked: true };
 };
 
+// Only the fields the bookmarks list renders — never the full row, which
+// would ship solutionCode/starterCode to the client.
+const bookmarkProblemSummary = {
+  select: {
+    id: true,
+    number: true,
+    title: true,
+    slug: true,
+    difficulty: true,
+    tags: true,
+  },
+} as const;
+
 export const getBookmarks = async (userId: string) => {
   return prisma.bookmark.findMany({
     where: {
       userId,
     },
     include: {
-      problem: true,
+      problem: bookmarkProblemSummary,
     },
+    orderBy: { createdAt: "desc" },
   });
 };

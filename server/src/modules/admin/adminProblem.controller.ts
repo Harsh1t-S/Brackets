@@ -14,8 +14,9 @@ export class AdminProblemController {
       const { page, limit, search, difficulty } = req.query;
 
       const result = await adminProblemService.getAllProblems({
-        page: Number(page) || 1,
-        limit: Number(limit) || 10,
+        page: Math.max(Number(page) || 1, 1),
+        // Clamp so an admin request can't ask for an unbounded page size.
+        limit: Math.min(Math.max(Number(limit) || 10, 1), 100),
         search: search as string,
         difficulty: difficulty as string,
       });

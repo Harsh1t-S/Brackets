@@ -169,16 +169,20 @@ export const getStats = async () => {
     prisma.problem.count({ where: { difficulty: "HARD" } }),
   ]);
 
-  // Distinct tags across all problems.
-  const tagRows = await prisma.problem.findMany({ select: { tags: true } });
-  const topics = new Set<string>();
-  tagRows.forEach((row) => row.tags.forEach((t) => topics.add(t)));
+  // Distinct tags across all problems — counted in the DB rather than pulling
+  // every problem's tags into memory (set-returning functions in FROM are
+  // implicitly LATERAL in Postgres, so unnest can reference "tags").
+  const topicRows = await prisma.$queryRaw<{ count: bigint }[]>`
+    SELECT COUNT(DISTINCT tag)::bigint AS count
+    FROM "Problem", unnest("tags") AS tag
+  `;
+  const totalTopics = Number(topicRows[0]?.count ?? 0);
 
   return {
     totalProblems: total,
     easyProblems: easy,
     mediumProblems: medium,
     hardProblems: hard,
-    totalTopics: topics.size,
+    totalTopics,
   };
 };

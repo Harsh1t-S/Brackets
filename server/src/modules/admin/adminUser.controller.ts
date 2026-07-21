@@ -1,41 +1,23 @@
 import { Request, Response } from "express";
-import { Role } from "@prisma/client";
 import { getAllUsers, setUserRole } from "./adminUser.service";
+import { updateRoleSchema } from "./adminUser.validation";
+import { asyncHandler } from "../../utils/asyncHandler";
+import { ApiError } from "../../utils/ApiError";
 
-export const list = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const users = await getAllUsers();
-    res.status(200).json({ success: true, data: users });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Failed to fetch users." });
-  }
-};
+export const list = asyncHandler(async (_req: Request, res: Response) => {
+  const users = await getAllUsers();
+  res.status(200).json({ success: true, data: users });
+});
 
-export const updateRole = async (
-  req: Request<{ id: string }>,
-  res: Response
-): Promise<void> => {
-  try {
-    const { role } = req.body;
+export const updateRole = asyncHandler(
+  async (req: Request<{ id: string }>, res: Response) => {
+    const { role } = updateRoleSchema.parse(req.body);
 
-    if (role !== Role.ADMIN && role !== Role.USER) {
-      res.status(400).json({ success: false, message: "Invalid role." });
-      return;
-    }
-
-    if (req.user?.id === req.params.id && role !== Role.ADMIN) {
-      res.status(400).json({
-        success: false,
-        message: "You cannot remove your own admin access.",
-      });
-      return;
+    if (req.user?.id === req.params.id && role !== "ADMIN") {
+      throw new ApiError(400, "You cannot remove your own admin access.");
     }
 
     const user = await setUserRole(req.params.id, role);
     res.status(200).json({ success: true, data: user });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Failed to update role." });
   }
-};
+);

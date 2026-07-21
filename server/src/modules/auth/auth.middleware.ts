@@ -1,11 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
 import { Role } from "@prisma/client";
 import prisma from "../../prisma/prisma";
-
-interface JwtPayload {
-  userId: string;
-}
+import { verifyToken } from "../../utils/jwt";
 
 declare global {
   namespace Express {
@@ -39,10 +35,7 @@ export const protect = async (
 
     const token = authHeader.split(" ")[1];
 
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET as string
-    ) as JwtPayload;
+    const decoded = verifyToken(token);
 
     const user = await prisma.user.findUnique({
       where: {
@@ -89,10 +82,7 @@ export const optionalAuth = async (
   try {
     const authHeader = req.headers.authorization;
     if (authHeader?.startsWith("Bearer ")) {
-      const decoded = jwt.verify(
-        authHeader.split(" ")[1],
-        process.env.JWT_SECRET as string
-      ) as JwtPayload;
+      const decoded = verifyToken(authHeader.split(" ")[1]);
 
       const user = await prisma.user.findUnique({
         where: { id: decoded.userId },

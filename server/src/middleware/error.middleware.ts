@@ -1,14 +1,28 @@
 import { Request, Response, NextFunction } from "express";
 import { Prisma } from "@prisma/client";
 import { ZodError } from "zod";
+import { ApiError } from "../utils/ApiError";
+import { isProduction } from "../config/env";
 
 export const errorHandler = (
   error: unknown,
-  req: Request,
+  _req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ): void => {
-  console.error(error);
+  // Expected, client-facing errors are the normal control flow — no need to
+  // log them as if they were crashes. Only log the unexpected ones.
+  if (!(error instanceof ApiError)) {
+    console.error(error);
+  }
+
+  if (error instanceof ApiError) {
+    res.status(error.status).json({
+      success: false,
+      message: error.message,
+    });
+    return;
+  }
 
   if (error instanceof ZodError) {
     res.status(400).json({
@@ -36,6 +50,13 @@ export const errorHandler = (
           message: "Record not found.",
         });
         return;
+
+      case "P2003":
+        res.status(404).json({
+          success: false,
+          message: "Related record not found.",
+        });
+        return;
     }
   }
 
@@ -53,5 +74,9 @@ export const errorHandler = (
   res.status(500).json({
     success: false,
     message: "Internal Server Error",
+    // Never leak internal error detail to clients in production; surface it in
+    // development to make debugging easier.
+    ...(!isProduction &&
+      error instanceof Error && { detail: error.message }),
   });
 };
