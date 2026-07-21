@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { useProblem } from "../hooks/useProblem";
@@ -10,10 +11,19 @@ import { difficultyBadgeClass, difficultyLabel } from "../../../lib/difficulty";
 import { PageLoader } from "../../../components/common/Spinner";
 import { companyLogoUrl } from "../../../lib/companyLogo";
 
+type Tab = "description" | "solution" | "related";
+
+const TABS: { id: Tab; label: string }[] = [
+  { id: "description", label: "Description" },
+  { id: "solution", label: "Solution" },
+  { id: "related", label: "Related" },
+];
+
 export default function ProblemDetailsPage() {
   // `key` may be a number ("1") or a legacy slug ("two-sum").
   const { key = "", slug } = useParams();
   const { data: problem, isLoading, isError } = useProblem(key);
+  const [tab, setTab] = useState<Tab>("description");
 
   useDocumentTitle(
     problem ? `${problem.number}. ${problem.title}` : "Problem"
@@ -46,7 +56,7 @@ export default function ProblemDetailsPage() {
     <div className="mx-auto max-w-7xl px-6 py-8">
       <Link
         to="/problems"
-        className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-ink-muted transition-colors hover:text-ink"
+        className="mb-5 inline-flex items-center gap-1.5 text-sm font-medium text-ink-muted transition-colors hover:text-ink"
       >
         <ArrowLeft size={16} />
         All problems
@@ -55,106 +65,135 @@ export default function ProblemDetailsPage() {
       <div className="grid grid-cols-12 gap-8">
         {/* Left — problem statement */}
         <div className="col-span-12 lg:col-span-7">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight text-ink">
+          {/* Header: title, then one quiet meta line, then one action row. */}
+          <h1 className="flex flex-wrap items-center gap-3 text-3xl font-bold tracking-tight text-ink">
+            <span>
               <span className="mr-2 text-ink-subtle">#{problem.number}</span>
               {problem.title}
-            </h1>
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <span className={difficultyBadgeClass(problem.difficulty)}>
-                {difficultyLabel(problem.difficulty)}
-              </span>
-              {problem.tags.map((tag) => (
+            </span>
+            <span className={difficultyBadgeClass(problem.difficulty)}>
+              {difficultyLabel(problem.difficulty)}
+            </span>
+          </h1>
+
+          <div className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ink-subtle">
+            <span>{problem.acceptance}% acceptance</span>
+            {problem.tags.length > 0 && <span aria-hidden>·</span>}
+            {problem.tags.map((tag, i) => (
+              <span key={tag} className="flex items-center gap-2">
                 <Link
-                  key={tag}
-                  to={`/problems?tag=${encodeURIComponent(tag)}`}
-                  className="rounded-md bg-surface-2 px-2.5 py-1 text-xs font-medium text-ink-muted transition-colors hover:bg-brand-soft hover:text-brand"
+                  to={`/problems?tags=${encodeURIComponent(tag)}`}
+                  className="text-ink-muted transition-colors hover:text-brand"
                 >
                   {tag}
                 </Link>
-              ))}
-            </div>
-
-            <ProblemActions problem={problem} />
-
-            {problem.companies && problem.companies.length > 0 && (
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                <span className="text-sm text-ink-subtle">Asked by</span>
-                {problem.companies.map((c) => (
-                  <Link
-                    key={c}
-                    to={`/problems?companies=${encodeURIComponent(c)}`}
-                    title={`All problems asked by ${c}`}
-                    className="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface-2 px-2.5 py-1 text-xs font-medium text-ink transition-colors hover:border-brand/40 hover:text-brand"
-                  >
-                    <img
-                      src={companyLogoUrl(c)}
-                      alt=""
-                      loading="lazy"
-                      className="h-3.5 w-3.5 rounded-sm"
-                      onError={(e) => {
-                        e.currentTarget.style.display = "none";
-                      }}
-                    />
-                    {c}
-                  </Link>
-                ))}
-              </div>
-            )}
+                {i < problem.tags.length - 1 && <span aria-hidden>·</span>}
+              </span>
+            ))}
           </div>
 
-          <section className="mb-10">
-            <h2 className="mb-3 text-lg font-semibold text-ink">Description</h2>
-            <div
-              className="prose prose-invert max-w-none prose-pre:bg-surface-2 prose-code:text-brand"
-              dangerouslySetInnerHTML={{ __html: problem.description }}
-            />
-          </section>
+          <ProblemActions problem={problem} />
 
-          {problem.constraints && (
-            <section className="mb-10">
-              <h2 className="mb-3 text-lg font-semibold text-ink">Constraints</h2>
-              <div
-                className="whitespace-pre-wrap rounded-xl border border-line bg-surface-2 p-4 font-mono text-sm leading-6 text-ink-muted"
-                dangerouslySetInnerHTML={{ __html: problem.constraints }}
-              />
-            </section>
-          )}
+          {/* Tabs keep description / solution / related from stacking up */}
+          <div
+            role="tablist"
+            aria-label="Problem sections"
+            className="mt-6 flex items-center gap-5 border-b border-line"
+          >
+            {TABS.map((t) => (
+              <button
+                key={t.id}
+                role="tab"
+                aria-selected={tab === t.id}
+                onClick={() => setTab(t.id)}
+                className={`-mb-px border-b-2 pb-2.5 text-sm font-medium transition-colors ${
+                  tab === t.id
+                    ? "border-brand text-ink"
+                    : "border-transparent text-ink-subtle hover:text-ink-muted"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
 
-          <section>
-            <h2 className="mb-3 text-lg font-semibold text-ink">Examples</h2>
-            <div className="space-y-4">
-              {problem.examples.map((example, index) => (
-                <div key={index} className="card overflow-hidden">
-                  <div className="border-b border-line bg-surface-2 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-ink-subtle">
-                    Example {index + 1}
+          <div className="pt-6">
+            {tab === "description" && (
+              <>
+                <div
+                  className="prose prose-invert max-w-none prose-pre:bg-surface-2 prose-code:text-brand"
+                  dangerouslySetInnerHTML={{ __html: problem.description }}
+                />
+
+                {problem.constraints && (
+                  <div className="mt-6 whitespace-pre-wrap rounded-xl border border-line bg-surface-2 p-4 font-mono text-sm leading-6 text-ink-muted">
+                    {/* Constraints read as part of the statement, not a section */}
+                    <span
+                      dangerouslySetInnerHTML={{ __html: problem.constraints }}
+                    />
                   </div>
-                  <div className="space-y-2 p-4 font-mono text-sm">
-                    <p className="text-ink">
-                      <span className="text-ink-subtle">Input: </span>
-                      {example.input}
-                    </p>
-                    <p className="text-ink">
-                      <span className="text-ink-subtle">Output: </span>
-                      {example.output}
-                    </p>
-                    {example.explanation && (
-                      <p className="font-sans text-ink-muted">
-                        <span className="font-semibold text-ink">
-                          Explanation:{" "}
-                        </span>
-                        {example.explanation}
-                      </p>
-                    )}
-                  </div>
+                )}
+
+                <div className="mt-8 space-y-4">
+                  {problem.examples.map((example, index) => (
+                    <div key={index} className="card overflow-hidden">
+                      <div className="border-b border-line bg-surface-2 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-ink-subtle">
+                        Example {index + 1}
+                      </div>
+                      <div className="space-y-2 p-4 font-mono text-sm">
+                        <p className="text-ink">
+                          <span className="text-ink-subtle">Input: </span>
+                          {example.input}
+                        </p>
+                        <p className="text-ink">
+                          <span className="text-ink-subtle">Output: </span>
+                          {example.output}
+                        </p>
+                        {example.explanation && (
+                          <p className="font-sans text-ink-muted">
+                            <span className="font-semibold text-ink">
+                              Explanation:{" "}
+                            </span>
+                            {example.explanation}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </section>
 
-          <SolutionPanel problem={problem} />
+                {/* Companies are context, not a headline — keep them last. */}
+                {problem.companies && problem.companies.length > 0 && (
+                  <div className="mt-8 flex flex-wrap items-center gap-2 border-t border-line pt-5">
+                    <span className="text-sm text-ink-subtle">Asked by</span>
+                    {problem.companies.map((c) => (
+                      <Link
+                        key={c}
+                        to={`/problems?companies=${encodeURIComponent(c)}`}
+                        title={`All problems asked by ${c}`}
+                        className="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface-2 px-2.5 py-1 text-xs font-medium text-ink transition-colors hover:border-brand/40 hover:text-brand"
+                      >
+                        <img
+                          src={companyLogoUrl(c)}
+                          alt=""
+                          loading="lazy"
+                          className="h-3.5 w-3.5 rounded-sm"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                          }}
+                        />
+                        {c}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
 
-          <ProblemNav problemId={problem.id} />
+            {tab === "solution" && <SolutionPanel problem={problem} />}
+
+            {tab === "related" && <ProblemNav problemId={problem.id} />}
+          </div>
         </div>
 
         {/* Right — code workspace (sticks while the statement scrolls) */}

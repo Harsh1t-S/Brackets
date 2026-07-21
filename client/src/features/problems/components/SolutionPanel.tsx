@@ -22,7 +22,7 @@ export default function SolutionPanel({ problem }: Props) {
   // "sign in" to an already-signed-in user is just confusing.
   if (languages.length === 0) {
     return (
-      <section className="mt-10">
+      <section>
         <div className="card flex items-center justify-between gap-4 p-4">
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-2 text-ink-subtle">
@@ -48,7 +48,7 @@ export default function SolutionPanel({ problem }: Props) {
   }
 
   return (
-    <section className="mt-10">
+    <section>
       <div className="card p-4">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-lg font-semibold text-ink">Solution</h2>

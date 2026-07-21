@@ -20,6 +20,11 @@ interface Props {
   problem: Problem;
 }
 
+/**
+ * One compact row: the two things you *do* on the left, the two things you
+ * *rate* on the right. Acceptance lives in the header meta line instead of
+ * competing here as a third pill.
+ */
 export default function ProblemActions({ problem }: Props) {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -46,44 +51,13 @@ export default function ProblemActions({ problem }: Props) {
     };
   }
 
-  const pill =
+  const action =
     "inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-50";
+  const vote =
+    "inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm transition-colors disabled:opacity-50";
 
   return (
-    <div className="mt-4 flex flex-wrap items-center gap-2">
-      <span className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface-2 px-3 py-1.5 text-sm">
-        <span className="text-ink-subtle">Acceptance</span>
-        <span className="font-semibold text-easy">{problem.acceptance}%</span>
-      </span>
-
-      <button
-        onClick={guard(() => voteMutation.mutate(1))}
-        disabled={voteMutation.isPending}
-        aria-pressed={myVote === 1}
-        title={user ? "Like" : "Sign in to vote"}
-        className={`${pill} ${
-          myVote === 1
-            ? "border-easy/40 bg-easy/10 text-easy"
-            : "border-line bg-surface-2 text-ink-muted hover:text-easy"
-        }`}
-      >
-        <ThumbsUp size={15} /> {problem.likes}
-      </button>
-
-      <button
-        onClick={guard(() => voteMutation.mutate(-1))}
-        disabled={voteMutation.isPending}
-        aria-pressed={myVote === -1}
-        title={user ? "Dislike" : "Sign in to vote"}
-        className={`${pill} ${
-          myVote === -1
-            ? "border-hard/40 bg-hard/10 text-hard"
-            : "border-line bg-surface-2 text-ink-muted hover:text-hard"
-        }`}
-      >
-        <ThumbsDown size={15} /> {problem.dislikes}
-      </button>
-
+    <div className="mt-5 flex flex-wrap items-center gap-2">
       <button
         onClick={guard(() =>
           toggleSolved.mutate(undefined, {
@@ -97,7 +71,7 @@ export default function ProblemActions({ problem }: Props) {
         disabled={toggleSolved.isPending}
         aria-pressed={solved}
         title={user ? "Mark as solved" : "Sign in to track progress"}
-        className={`${pill} ${
+        className={`${action} ${
           solved
             ? "border-easy/40 bg-easy/10 text-easy"
             : "border-line bg-surface-2 text-ink-muted hover:text-easy"
@@ -110,8 +84,9 @@ export default function ProblemActions({ problem }: Props) {
       <button
         onClick={guard(() => toggleBookmark.mutate(problem.id))}
         disabled={toggleBookmark.isPending}
+        aria-pressed={bookmarked}
         title={user ? undefined : "Sign in to bookmark"}
-        className={`${pill} ${
+        className={`${action} ${
           bookmarked
             ? "border-brand/40 bg-brand-soft text-brand"
             : "border-line bg-surface-2 text-ink-muted hover:text-ink"
@@ -120,6 +95,34 @@ export default function ProblemActions({ problem }: Props) {
         {bookmarked ? <BookmarkCheck size={15} /> : <Bookmark size={15} />}
         {bookmarked ? "Saved" : "Save"}
       </button>
+
+      {/* Ratings sit apart from the actions so the row reads clearly. */}
+      <div className="ml-auto flex items-center gap-0.5">
+        <button
+          onClick={guard(() => voteMutation.mutate(1))}
+          disabled={voteMutation.isPending}
+          aria-pressed={myVote === 1}
+          title={user ? "Like" : "Sign in to vote"}
+          className={`${vote} ${
+            myVote === 1
+              ? "text-easy"
+              : "text-ink-subtle hover:text-easy"
+          }`}
+        >
+          <ThumbsUp size={15} /> {problem.likes}
+        </button>
+        <button
+          onClick={guard(() => voteMutation.mutate(-1))}
+          disabled={voteMutation.isPending}
+          aria-pressed={myVote === -1}
+          title={user ? "Dislike" : "Sign in to vote"}
+          className={`${vote} ${
+            myVote === -1 ? "text-hard" : "text-ink-subtle hover:text-hard"
+          }`}
+        >
+          <ThumbsDown size={15} /> {problem.dislikes}
+        </button>
+      </div>
     </div>
   );
 }

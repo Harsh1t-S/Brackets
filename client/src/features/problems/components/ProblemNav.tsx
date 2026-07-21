@@ -10,15 +10,24 @@ import type { ProblemSummary } from "../../../services/problem.service";
 const href = (p: ProblemSummary) => `/problems/${p.number}/${p.slug}`;
 
 export default function ProblemNav({ problemId }: { problemId: string }) {
-  const { data } = useProblemContext(problemId);
+  const { data, isLoading } = useProblemContext(problemId);
 
-  if (!data) return null;
+  // Rendered inside a tab, so it needs real states rather than `null`.
+  if (isLoading || !data) {
+    return <p className="text-sm text-ink-muted">Loading related problems…</p>;
+  }
 
   const { prev, next, related } = data;
-  if (!prev && !next && related.length === 0) return null;
+  if (!prev && !next && related.length === 0) {
+    return (
+      <p className="text-sm text-ink-muted">
+        No related problems yet — this one doesn't share topics with others.
+      </p>
+    );
+  }
 
   return (
-    <section className="mt-10 space-y-6">
+    <section className="space-y-6">
       {/* Prev / next */}
       {(prev || next) && (
         <div className="grid gap-3 sm:grid-cols-2">
