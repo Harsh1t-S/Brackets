@@ -26,7 +26,6 @@ export default function ProblemsPage() {
   // Search is a controlled input (debounced); everything else is read straight
   // from the URL so every filter is shareable and survives reloads.
   const [search, setSearch] = useState(searchParams.get("search") ?? "");
-  const sort = searchParams.get("sort") ?? "number";
   const page = Number(searchParams.get("page")) || 1;
 
   // `tag` (singular) is still produced by topic links elsewhere in the app.
@@ -81,6 +80,11 @@ export default function ProblemsPage() {
 
   // Keep the URL ?search= in sync with the debounced input.
   const debouncedSearch = useDebounce(search);
+
+  // Default to relevance while searching (best-match first) and to problem
+  // number otherwise — unless the user picked a sort explicitly.
+  const sort = searchParams.get("sort") ?? (debouncedSearch ? "relevance" : "number");
+
   useEffect(() => {
     const current = searchParams.get("search") ?? "";
     if (debouncedSearch !== current) {
@@ -128,7 +132,9 @@ export default function ProblemsPage() {
         <p className="mt-2 text-ink-muted">
           {data
             ? `${data.total} problem${data.total === 1 ? "" : "s"} ${
-                hasActiveFilters ? "match your filters" : "to sharpen your skills"
+                hasActiveFilters
+                  ? `${data.total === 1 ? "matches" : "match"} your filters`
+                  : "to sharpen your skills"
               }`
             : "Browse the full problem set"}
         </p>
@@ -154,6 +160,7 @@ export default function ProblemsPage() {
           }
           className="rounded-lg border border-line bg-surface px-3 py-1.5 text-sm text-ink outline-none focus:border-brand"
         >
+          {debouncedSearch && <option value="relevance">Relevance</option>}
           <option value="number">Number</option>
           <option value="acceptance">Acceptance</option>
           <option value="likes">Most liked</option>

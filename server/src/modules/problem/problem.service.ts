@@ -46,10 +46,11 @@ export const getProblems = async ({
 
   const term = search?.trim();
 
-  // With a search term and no explicit sort, rank by how well each row
-  // matches: exact title > title prefix > title contains > tag > company.
+  // With a search term, rank by how well each row matches: exact title >
+  // title prefix > title contains > tag > company. Only meaningful with a
+  // term, so any other sort (or no term) falls back to the whitelist.
   const orderBy =
-    term && !sort
+    term && (!sort || sort === "relevance")
       ? Prisma.sql`
           CASE
             WHEN lower("title") = lower(${term}) THEN 0
