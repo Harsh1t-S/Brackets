@@ -71,6 +71,8 @@ export default function ProblemFormModal({ open, onClose, editingProblem }: Prop
       resetForm();
       return;
     }
+    // Populate the form from the problem being edited.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTitle(editingProblem.title);
     setSlug(editingProblem.slug);
     setSlugEdited(true);
@@ -199,8 +201,12 @@ export default function ProblemFormModal({ open, onClose, editingProblem }: Prop
       }
       resetForm();
       onClose();
-    } catch (err: any) {
-      const data = err?.response?.data;
+    } catch (err) {
+      const data = (
+        err as {
+          response?: { data?: { message?: string; errors?: Record<string, string[]> } };
+        }
+      )?.response?.data;
       // Surface the first field-level validation message when present.
       const fieldErrors = data?.errors
         ? Object.entries(data.errors as Record<string, string[]>)

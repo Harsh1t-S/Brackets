@@ -23,12 +23,8 @@ import { useDashboard } from "../../dashboard/hooks/useDashboard";
 import Pagination from "../../../components/common/Pagination";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
 import { useToast } from "../../../components/common/Toast";
-
-const badgeClass: Record<string, string> = {
-  EASY: "badge badge-easy",
-  MEDIUM: "badge badge-medium",
-  HARD: "badge badge-hard",
-};
+import { difficultyBadgeClass, plural } from "../../../lib/difficulty";
+import { errorMessage } from "../../../lib/errors";
 
 const HUES = [258, 210, 190, 160, 140, 45, 25, 350];
 const PAGE_SIZE = 5;
@@ -60,11 +56,8 @@ export default function ProfilePage() {
       await updateMe({ avatar });
       await refresh();
       toast("Profile photo updated", "success");
-    } catch (e: any) {
-      toast(
-        e?.response?.data?.message ?? e?.message ?? "Couldn't update photo",
-        "error"
-      );
+    } catch (e) {
+      toast(errorMessage(e, "Couldn't update photo"), "error");
     } finally {
       setSaving(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -96,8 +89,8 @@ export default function ProfilePage() {
       await refresh();
       setEditingName(false);
       toast("Name updated", "success");
-    } catch (e: any) {
-      toast(e?.response?.data?.message ?? "Couldn't update name", "error");
+    } catch (e) {
+      toast(errorMessage(e, "Couldn't update name"), "error");
     } finally {
       setSaving(false);
     }
@@ -251,8 +244,7 @@ export default function ProfilePage() {
               <CheckCircle2 size={14} /> Solved
             </p>
             <p className="mt-1.5 font-medium text-ink">
-              {dashboard?.solvedCount ?? 0} problem
-              {(dashboard?.solvedCount ?? 0) !== 1 && "s"}
+              {plural(dashboard?.solvedCount ?? 0, "problem")}
             </p>
           </div>
           <div className="rounded-xl border border-line bg-surface-2 p-4">
@@ -260,7 +252,7 @@ export default function ProfilePage() {
               <Bookmark size={14} /> Bookmarked
             </p>
             <p className="mt-1.5 font-medium text-ink">
-              {bookmarks.length} problem{bookmarks.length !== 1 && "s"}
+              {plural(bookmarks.length, "problem")}
             </p>
           </div>
         </div>
@@ -288,11 +280,7 @@ export default function ProfilePage() {
                     {row.problem.title}
                   </h3>
                 </span>
-                <span
-                  className={
-                    badgeClass[row.problem.difficulty] ?? "badge badge-easy"
-                  }
-                >
+                <span className={difficultyBadgeClass(row.problem.difficulty)}>
                   {row.problem.difficulty}
                 </span>
               </Link>
@@ -341,11 +329,7 @@ export default function ProfilePage() {
                       {b.problem.title}
                     </h3>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
-                      <span
-                        className={
-                          badgeClass[b.problem.difficulty] ?? "badge badge-easy"
-                        }
-                      >
+                      <span className={difficultyBadgeClass(b.problem.difficulty)}>
                         {b.problem.difficulty}
                       </span>
                       {b.problem.tags.slice(0, 3).map((t) => (

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 
 import Logo from "./Logo";
@@ -22,6 +22,22 @@ function navClass({ isActive }: { isActive: boolean }) {
 export default function Navbar() {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
+  const { pathname } = useLocation();
+
+  // Close the mobile menu on navigation and on Escape.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
 
   const links = [
     { to: "/problems", label: "Problems" },
@@ -71,6 +87,8 @@ export default function Navbar() {
             <button
               type="button"
               aria-label="Toggle menu"
+              aria-expanded={open}
+              aria-controls="mobile-menu"
               onClick={() => setOpen((v) => !v)}
               className="btn btn-ghost h-10 w-10 !p-0 rounded-lg md:hidden"
             >
@@ -82,7 +100,7 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {open && (
-        <div className="border-t border-line bg-canvas md:hidden">
+        <div id="mobile-menu" className="border-t border-line bg-canvas md:hidden">
           <Container>
             <nav className="flex flex-col gap-1 py-3">
               {links.map((l) => (

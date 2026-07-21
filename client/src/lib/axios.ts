@@ -1,7 +1,13 @@
 import axios from "axios";
 
+// Configurable per environment (local/staging/prod) via VITE_API_URL; falls
+// back to the production API so existing deploys keep working unchanged.
+const baseURL =
+  import.meta.env.VITE_API_URL ??
+  "https://brackets-production-26e2.up.railway.app/api";
+
 const api = axios.create({
-  baseURL: "https://brackets-production-26e2.up.railway.app/api",
+  baseURL,
   headers: {
     "Content-Type": "application/json",
   },

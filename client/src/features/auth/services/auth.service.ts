@@ -11,14 +11,16 @@ export interface RegisterData {
   password: string;
 }
 
+// The API wraps every payload in { success, data }. Unwrap `data` here so
+// callers work with the payload directly.
 export const login = async (data: LoginData) => {
   const response = await api.post("/auth/login", data);
-  return response.data;
+  return response.data.data;
 };
 
 export const register = async (data: RegisterData) => {
   const response = await api.post("/auth/register", data);
-  return response.data;
+  return response.data.data;
 };
 
 export const updateMe = async (data: {
@@ -26,7 +28,7 @@ export const updateMe = async (data: {
   avatar?: string | null;
 }) => {
   const response = await api.patch("/auth/me", data);
-  return response.data;
+  return response.data.data;
 };
 
 export const getCurrentUser = async (token: string) => {
@@ -36,5 +38,5 @@ export const getCurrentUser = async (token: string) => {
     },
   });
 
-  return response.data;
+  return response.data.data;
 };

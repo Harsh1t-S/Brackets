@@ -15,16 +15,29 @@ export default function UserMenu() {
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
+    if (!open) return;
+
     function onClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setOpen(false);
       }
     }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setOpen(false);
+        triggerRef.current?.focus();
+      }
+    }
     document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
-  }, []);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
 
   const items = [
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -38,7 +51,11 @@ export default function UserMenu() {
   return (
     <div className="relative" ref={ref}>
       <button
+        ref={triggerRef}
         onClick={() => setOpen((v) => !v)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label={`Account menu for ${user?.name ?? "your account"}`}
         className="flex items-center gap-2 rounded-xl border border-line bg-surface px-2 py-1.5 pr-3 transition-colors hover:border-line-strong"
       >
         <img
@@ -53,7 +70,10 @@ export default function UserMenu() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-line bg-elevated shadow-xl shadow-black/20">
+        <div
+          role="menu"
+          className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-line bg-elevated shadow-xl shadow-black/20"
+        >
           <div className="border-b border-line px-4 py-3">
             <p className="truncate text-sm font-semibold text-ink">{user?.name}</p>
             <p className="truncate text-xs text-ink-subtle">{user?.email}</p>
@@ -63,6 +83,7 @@ export default function UserMenu() {
               <Link
                 key={to}
                 to={to}
+                role="menuitem"
                 onClick={() => setOpen(false)}
                 className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink"
               >
@@ -74,6 +95,7 @@ export default function UserMenu() {
           <div className="border-t border-line p-1.5">
             <button
               onClick={logout}
+              role="menuitem"
               className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-hard transition-colors hover:bg-hard/10"
             >
               <LogOut size={16} />

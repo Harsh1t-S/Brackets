@@ -1,44 +1,62 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { X } from "lucide-react";
+import { SearchX, X } from "lucide-react";
 import ProblemFilters from "../pages/ProblemFilters";
 import { useProblems } from "../hooks/useProblems";
 import ProblemTable from "../components/ProblemTable";
 import Pagination from "../../../components/common/Pagination";
+import ErrorState from "../../../components/common/ErrorState";
 import { useDebounce } from "../../../hooks/useDebounce";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
 
 export default function ProblemsPage() {
   useDocumentTitle("Problems");
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // Search is a controlled input (debounced); everything else is read straight
+  // from the URL so difficulty/sort/page are shareable and survive reloads.
   const [search, setSearch] = useState(searchParams.get("search") ?? "");
-  const [difficulty, setDifficulty] = useState("");
-  const [sort, setSort] = useState("number");
-  const [page, setPage] = useState(1);
+  const difficulty = searchParams.get("difficulty") ?? "";
+  const sort = searchParams.get("sort") ?? "number";
+  const page = Number(searchParams.get("page")) || 1;
   const tag = searchParams.get("tag") ?? "";
 
-  // Keep the URL ?search= in sync so the query is shareable / survives reloads.
+  // Merge a mutation into the URL params. Resets to page 1 unless told not to.
+  function updateParams(
+    mutate: (next: URLSearchParams) => void,
+    resetPage = true
+  ) {
+    const next = new URLSearchParams(searchParams);
+    mutate(next);
+    if (resetPage) next.delete("page");
+    setSearchParams(next, { replace: true });
+  }
+
+  // Keep the URL ?search= in sync with the debounced input.
   useEffect(() => {
     const current = searchParams.get("search") ?? "";
     if (search !== current) {
-      const next = new URLSearchParams(searchParams);
-      if (search) next.set("search", search);
-      else next.delete("search");
-      setSearchParams(next, { replace: true });
+      updateParams((next) => {
+        if (search) next.set("search", search);
+        else next.delete("search");
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
   function clearTag() {
-    const next = new URLSearchParams(searchParams);
-    next.delete("tag");
-    setSearchParams(next, { replace: true });
-    setPage(1);
+    updateParams((next) => next.delete("tag"));
+  }
+
+  function clearAllFilters() {
+    setSearch("");
+    setSearchParams(new URLSearchParams(), { replace: true });
   }
 
   const debouncedSearch = useDebounce(search);
+  const hasActiveFilters = !!(debouncedSearch || difficulty || tag);
 
-  const { data, isLoading, isError } = useProblems({
+  const { data, isLoading, isError, refetch } = useProblems({
     search: debouncedSearch,
     difficulty,
     tag,
@@ -63,14 +81,13 @@ export default function ProblemsPage() {
       <ProblemFilters
         search={search}
         difficulty={difficulty}
-        onSearchChange={(value) => {
-          setSearch(value);
-          setPage(1);
-        }}
-        onDifficultyChange={(value) => {
-          setDifficulty(value);
-          setPage(1);
-        }}
+        onSearchChange={setSearch}
+        onDifficultyChange={(value) =>
+          updateParams((next) => {
+            if (value) next.set("difficulty", value);
+            else next.delete("difficulty");
+          })
+        }
       />
 
       <div className="mb-6 flex items-center gap-2">
@@ -80,10 +97,9 @@ export default function ProblemsPage() {
         <select
           id="problem-sort"
           value={sort}
-          onChange={(e) => {
-            setSort(e.target.value);
-            setPage(1);
-          }}
+          onChange={(e) =>
+            updateParams((next) => next.set("sort", e.target.value))
+          }
           className="rounded-lg border border-line bg-surface px-3 py-1.5 text-sm text-ink outline-none focus:border-brand"
         >
           <option value="number">Number</option>
@@ -118,18 +134,49 @@ export default function ProblemsPage() {
       )}
 
       {isError && (
-        <div className="card p-10 text-center text-hard">
-          Failed to load problems.
-        </div>
+        <ErrorState
+          message="We couldn't load the problem set."
+          onRetry={() => refetch()}
+        />
       )}
 
       {!isLoading && !isError && data && (
         <>
-          <ProblemTable problems={data.problems} />
+          {data.problems.length === 0 ? (
+            <div className="card flex flex-col items-center gap-3 p-12 text-center">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface-2 text-ink-subtle">
+                <SearchX size={24} />
+              </span>
+              <div>
+                <h2 className="font-semibold text-ink">No problems found</h2>
+                <p className="mt-1 text-sm text-ink-muted">
+                  {hasActiveFilters
+                    ? "No problems match your current filters."
+                    : "There are no problems to show yet."}
+                </p>
+              </div>
+              {hasActiveFilters && (
+                <button
+                  onClick={clearAllFilters}
+                  className="btn btn-secondary mt-1 px-4 py-2 text-sm"
+                >
+                  Clear filters
+                </button>
+              )}
+            </div>
+          ) : (
+            <ProblemTable problems={data.problems} />
+          )}
 
           {data.totalPages > 1 && (
             <div className="mt-8">
-              <Pagination page={data.page} totalPages={data.totalPages} onChange={setPage} />
+              <Pagination
+                page={data.page}
+                totalPages={data.totalPages}
+                onChange={(p) =>
+                  updateParams((next) => next.set("page", String(p)), false)
+                }
+              />
             </div>
           )}
         </>

@@ -5,18 +5,8 @@ import ProblemActions from "../components/ProblemActions";
 import SolutionPanel from "../components/SolutionPanel";
 import CodeWorkspace from "../components/CodeWorkspace";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
-
-const badgeClass: Record<string, string> = {
-  EASY: "badge badge-easy",
-  MEDIUM: "badge badge-medium",
-  HARD: "badge badge-hard",
-};
-
-const label: Record<string, string> = {
-  EASY: "Easy",
-  MEDIUM: "Medium",
-  HARD: "Hard",
-};
+import { difficultyBadgeClass, difficultyLabel } from "../../../lib/difficulty";
+import { PageLoader } from "../../../components/common/Spinner";
 
 // Known company -> domain map for logo lookup; anything unknown falls back
 // to a guessed "<name>.com" (the favicon service returns a generic globe
@@ -73,11 +63,7 @@ export default function ProblemDetailsPage() {
   }
 
   if (isLoading) {
-    return (
-      <div className="flex h-96 items-center justify-center text-ink-muted">
-        Loading problem...
-      </div>
-    );
+    return <PageLoader label="Loading problem…" />;
   }
 
   if (isError || !problem) {
@@ -110,8 +96,8 @@ export default function ProblemDetailsPage() {
               {problem.title}
             </h1>
             <div className="mt-4 flex flex-wrap items-center gap-2">
-              <span className={badgeClass[problem.difficulty] ?? "badge badge-easy"}>
-                {label[problem.difficulty] ?? problem.difficulty}
+              <span className={difficultyBadgeClass(problem.difficulty)}>
+                {difficultyLabel(problem.difficulty)}
               </span>
               {problem.tags.map((tag) => (
                 <Link

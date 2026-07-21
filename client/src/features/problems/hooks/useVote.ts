@@ -33,11 +33,14 @@ export function useVote(problemId: string) {
     onSuccess: (result) => {
       queryClient.setQueryData(["problem-vote", problemId], result.myVote);
       // Detail pages may be cached under number or slug — match by id.
-      queryClient.setQueriesData({ queryKey: ["problem"] }, (old: any) =>
-        old?.id === problemId
-          ? { ...old, likes: result.likes, dislikes: result.dislikes }
-          : old
-      );
+      queryClient.setQueriesData({ queryKey: ["problem"] }, (old) => {
+        const cached = old as
+          | { id: string; likes: number; dislikes: number }
+          | undefined;
+        return cached?.id === problemId
+          ? { ...cached, likes: result.likes, dislikes: result.dislikes }
+          : old;
+      });
     },
   });
 }

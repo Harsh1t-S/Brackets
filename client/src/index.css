@@ -6,7 +6,9 @@
 
 /* ------------------------------------------------------------------ *
  * Design tokens
- * Semantic names map to CSS variables so light/dark swap at runtime.
+ * Semantic names map to CSS variables. The product is intentionally
+ * dark-only; tokens are indirected through variables to keep component
+ * styles semantic rather than to support a runtime theme swap.
  * ------------------------------------------------------------------ */
 @theme inline {
   --color-canvas: var(--canvas);
@@ -114,6 +116,29 @@
     border-radius: 9999px;
     border: 2px solid transparent;
     background-clip: content-box;
+  }
+
+  /* Global keyboard-focus ring for interactive elements that don't define
+     their own (links, table rows, custom buttons, selects). `:where()` keeps
+     specificity at 0 so component styles like `.btn` can still opt out.
+     Inputs are excluded — they show their own focus box-shadow. */
+  :where(a, button, [role="button"], [tabindex], select, summary):focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+/* Respect users who ask for less motion — neutralize hover lifts, the logo
+   rotate, toast slide-in, and long transitions. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

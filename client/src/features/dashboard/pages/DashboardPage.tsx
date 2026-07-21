@@ -10,30 +10,26 @@ import {
 import { useDashboard } from "../hooks/useDashboard";
 import { useAuth } from "../../auth/context/AuthContext";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
-
-const badgeClass: Record<string, string> = {
-  EASY: "badge badge-easy",
-  MEDIUM: "badge badge-medium",
-  HARD: "badge badge-hard",
-};
+import { difficultyBadgeClass } from "../../../lib/difficulty";
+import { PageLoader } from "../../../components/common/Spinner";
+import ErrorState from "../../../components/common/ErrorState";
 
 export default function DashboardPage() {
   useDocumentTitle("Dashboard");
-  const { data, isLoading, isError } = useDashboard();
+  const { data, isLoading, isError, refetch } = useDashboard();
   const { user } = useAuth();
 
   if (isLoading) {
-    return (
-      <div className="flex h-96 items-center justify-center text-ink-muted">
-        Loading dashboard...
-      </div>
-    );
+    return <PageLoader label="Loading dashboard…" />;
   }
 
   if (isError || !data) {
     return (
-      <div className="flex h-96 items-center justify-center text-hard">
-        Failed to load dashboard.
+      <div className="mx-auto max-w-7xl px-6 py-10">
+        <ErrorState
+          message="We couldn't load your dashboard."
+          onRetry={() => refetch()}
+        />
       </div>
     );
   }
@@ -101,11 +97,7 @@ export default function DashboardPage() {
                   <CheckCircle2 size={17} className="shrink-0 text-easy" />
                   <h3 className="font-medium text-ink">{row.problem.title}</h3>
                 </span>
-                <span
-                  className={
-                    badgeClass[row.problem.difficulty] ?? "badge badge-easy"
-                  }
-                >
+                <span className={difficultyBadgeClass(row.problem.difficulty)}>
                   {row.problem.difficulty}
                 </span>
               </Link>
@@ -140,9 +132,7 @@ export default function DashboardPage() {
                   {bookmark.problem.title}
                 </h3>
                 <span
-                  className={
-                    badgeClass[bookmark.problem.difficulty] ?? "badge badge-easy"
-                  }
+                  className={difficultyBadgeClass(bookmark.problem.difficulty)}
                 >
                   {bookmark.problem.difficulty}
                 </span>

@@ -5,18 +5,15 @@ import { Bookmark, ChevronRight, Search } from "lucide-react";
 import { useBookmarks } from "../hooks/useBookmarks";
 import Pagination from "../../../components/common/Pagination";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
-
-const badgeClass: Record<string, string> = {
-  EASY: "badge badge-easy",
-  MEDIUM: "badge badge-medium",
-  HARD: "badge badge-hard",
-};
+import { difficultyBadgeClass, plural } from "../../../lib/difficulty";
+import { PageLoader } from "../../../components/common/Spinner";
+import ErrorState from "../../../components/common/ErrorState";
 
 const PAGE_SIZE = 8;
 
 export default function BookmarksPage() {
   useDocumentTitle("Bookmarks");
-  const { data: bookmarks = [], isLoading, isError } = useBookmarks();
+  const { data: bookmarks = [], isLoading, isError, refetch } = useBookmarks();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
@@ -30,17 +27,16 @@ export default function BookmarksPage() {
   const visible = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   if (isLoading) {
-    return (
-      <div className="flex h-96 items-center justify-center text-ink-muted">
-        Loading bookmarks...
-      </div>
-    );
+    return <PageLoader label="Loading bookmarks…" />;
   }
 
   if (isError) {
     return (
-      <div className="flex h-96 items-center justify-center text-hard">
-        Failed to load bookmarks.
+      <div className="mx-auto max-w-7xl px-6 py-10">
+        <ErrorState
+          message="We couldn't load your bookmarks."
+          onRetry={() => refetch()}
+        />
       </div>
     );
   }
@@ -52,8 +48,7 @@ export default function BookmarksPage() {
           My Bookmarks
         </h1>
         <p className="mt-2 text-ink-muted">
-          {bookmarks.length} bookmarked problem
-          {bookmarks.length !== 1 && "s"}
+          {plural(bookmarks.length, "bookmarked problem")}
         </p>
       </div>
 
@@ -112,9 +107,9 @@ export default function BookmarksPage() {
                     </h2>
                     <div className="mt-3 flex flex-wrap items-center gap-2">
                       <span
-                        className={
-                          badgeClass[bookmark.problem.difficulty] ?? "badge badge-easy"
-                        }
+                        className={difficultyBadgeClass(
+                          bookmark.problem.difficulty
+                        )}
                       >
                         {bookmark.problem.difficulty}
                       </span>

@@ -1,25 +1,15 @@
 import type { AdminProblem } from "../../../types/adminProblem";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import {
+  difficultyBadgeClass,
+  difficultyLabel,
+} from "../../../lib/difficulty";
 
 interface Props {
   problems: AdminProblem[];
 }
 
-const badgeClass: Record<string, string> = {
-  EASY: "badge badge-easy",
-  MEDIUM: "badge badge-medium",
-  HARD: "badge badge-hard",
-};
-
-const label: Record<string, string> = {
-  EASY: "Easy",
-  MEDIUM: "Medium",
-  HARD: "Hard",
-};
-
 export default function ProblemTable({ problems }: Props) {
-  const navigate = useNavigate();
-
   if (problems.length === 0) {
     return (
       <div className="card p-10 text-center text-ink-muted">
@@ -46,19 +36,23 @@ export default function ProblemTable({ problems }: Props) {
             {problems.map((problem) => (
               <tr
                 key={problem.id}
-                onClick={() =>
-                  navigate(`/problems/${problem.number}/${problem.slug}`)
-                }
-                className="cursor-pointer transition-colors hover:bg-surface-2"
+                className="group relative transition-colors hover:bg-surface-2 focus-within:bg-surface-2"
               >
                 <td className="px-6 py-4 text-ink-subtle">{problem.number}</td>
                 <td className="px-6 py-4 font-medium text-ink">
-                  {problem.title}
+                  {/* Real link (keyboard, middle-click, open-in-new-tab). The
+                      stretched ::after makes the whole row a click target. */}
+                  <Link
+                    to={`/problems/${problem.number}/${problem.slug}`}
+                    className="rounded transition-colors after:absolute after:inset-0 group-hover:text-brand"
+                  >
+                    {problem.title}
+                  </Link>
                 </td>
 
                 <td className="px-6 py-4 text-center">
-                  <span className={badgeClass[problem.difficulty] ?? "badge badge-easy"}>
-                    {label[problem.difficulty] ?? problem.difficulty}
+                  <span className={difficultyBadgeClass(problem.difficulty)}>
+                    {difficultyLabel(problem.difficulty)}
                   </span>
                 </td>
 

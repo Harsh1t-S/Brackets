@@ -1,10 +1,16 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../../features/auth/context/AuthContext";
+import { Spinner } from "../../components/common/Spinner";
 
 function LoadingScreen() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-canvas text-ink-muted">
-      Loading...
+    <div
+      role="status"
+      aria-live="polite"
+      className="flex min-h-screen items-center justify-center gap-3 bg-canvas text-ink-muted"
+    >
+      <Spinner size={24} />
+      <span className="text-sm">Loading…</span>
     </div>
   );
 }

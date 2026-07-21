@@ -30,22 +30,46 @@ const config: Record<
   info: { icon: Info, className: "text-brand" },
 };
 
+const TOAST_TTL = 3200;
+const MAX_TOASTS = 4;
+
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const nextId = useRef(1);
+  // Per-toast auto-dismiss timers so we can pause on hover.
+  const timers = useRef<Map<number, number>>(new Map());
 
   const dismiss = useCallback((id: number) => {
+    const timer = timers.current.get(id);
+    if (timer) window.clearTimeout(timer);
+    timers.current.delete(id);
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
+
+  const scheduleDismiss = useCallback(
+    (id: number) => {
+      timers.current.set(
+        id,
+        window.setTimeout(() => dismiss(id), TOAST_TTL)
+      );
+    },
+    [dismiss]
+  );
 
   const toast = useCallback(
     (message: string, type: ToastType = "info") => {
       const id = nextId.current++;
-      setToasts((prev) => [...prev, { id, message, type }]);
-      window.setTimeout(() => dismiss(id), 3200);
+      // Cap the stack so a burst of toasts can't fill the screen.
+      setToasts((prev) => [...prev, { id, message, type }].slice(-MAX_TOASTS));
+      scheduleDismiss(id);
     },
-    [dismiss]
+    [scheduleDismiss]
   );
+
+  const pause = useCallback((id: number) => {
+    const timer = timers.current.get(id);
+    if (timer) window.clearTimeout(timer);
+  }, []);
 
   return (
     <ToastContext.Provider value={{ toast }}>
@@ -54,10 +78,14 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       <div className="pointer-events-none fixed bottom-4 right-4 z-[100] flex w-full max-w-sm flex-col gap-2">
         {toasts.map((t) => {
           const { icon: Icon, className } = config[t.type];
+          const isError = t.type === "error";
           return (
             <div
               key={t.id}
-              role="status"
+              role={isError ? "alert" : "status"}
+              aria-live={isError ? "assertive" : "polite"}
+              onMouseEnter={() => pause(t.id)}
+              onMouseLeave={() => scheduleDismiss(t.id)}
               className="pointer-events-auto flex items-start gap-3 rounded-xl border border-line bg-elevated px-4 py-3 shadow-lg shadow-black/30 animate-[toast-in_0.18s_ease-out]"
             >
               <Icon size={18} className={`mt-0.5 shrink-0 ${className}`} />

@@ -1,35 +1,40 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Braces, Check } from "lucide-react";
 
 import { login as loginService } from "../services/auth.service";
+import { loginSchema, type LoginValues } from "../schemas/loginSchema";
 import { useAuth } from "../context/AuthContext";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
+import { errorMessage } from "../../../lib/errors";
 
 export default function LoginPage() {
   useDocumentTitle("Sign in");
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [formError, setFormError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginValues>({
+    resolver: zodResolver(loginSchema),
+    mode: "onTouched",
+  });
 
+  const onSubmit = async (values: LoginValues) => {
+    setFormError("");
     try {
-      const data = await loginService({ email, password });
+      const data = await loginService(values);
       login(data.token);
       navigate("/problems");
-    } catch (err: any) {
-      setError(err?.response?.data?.message || "Invalid email or password.");
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      setFormError(errorMessage(err, "Invalid email or password."));
     }
   };
 
@@ -52,7 +57,7 @@ export default function LoginPage() {
             your streak alive with Bracket.
           </p>
           <ul className="mt-8 space-y-3">
-            {["500+ curated problems", "Track your progress", "Prep for real interviews"].map(
+            {["Curated problem set", "Track your progress", "Prep for real interviews"].map(
               (f) => (
                 <li key={f} className="flex items-center gap-3 text-ink-muted">
                   <Check size={18} className="text-easy" />
@@ -66,61 +71,90 @@ export default function LoginPage() {
 
       {/* Form */}
       <div className="flex items-center justify-center p-6 sm:p-8">
-        <form onSubmit={handleSubmit} className="card w-full max-w-md p-8">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate
+          className="card w-full max-w-md p-8"
+        >
           <h2 className="text-2xl font-bold tracking-tight text-ink">Sign in</h2>
           <p className="mt-1.5 text-sm text-ink-muted">
             Sign in to your Bracket account
           </p>
 
-          {error && (
-            <div className="mt-6 rounded-lg border border-hard/30 bg-hard/10 px-4 py-3 text-sm text-hard">
-              {error}
+          {formError && (
+            <div
+              role="alert"
+              className="mt-6 rounded-lg border border-hard/30 bg-hard/10 px-4 py-3 text-sm text-hard"
+            >
+              {formError}
             </div>
           )}
 
           <div className="mt-6">
-            <label className="mb-1.5 block text-sm font-medium text-ink">
+            <label
+              htmlFor="email"
+              className="mb-1.5 block text-sm font-medium text-ink"
+            >
               Email address
             </label>
             <input
+              id="email"
               type="email"
+              autoComplete="email"
               placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? "email-error" : undefined}
               className="input px-4 py-3"
+              {...register("email")}
             />
+            {errors.email && (
+              <p id="email-error" role="alert" className="mt-1.5 text-sm text-hard">
+                {errors.email.message}
+              </p>
+            )}
           </div>
 
           <div className="mt-5">
-            <label className="mb-1.5 block text-sm font-medium text-ink">
+            <label
+              htmlFor="password"
+              className="mb-1.5 block text-sm font-medium text-ink"
+            >
               Password
             </label>
             <div className="relative">
               <input
+                id="password"
                 type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
                 placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
+                aria-invalid={!!errors.password}
+                aria-describedby={errors.password ? "password-error" : undefined}
                 className="input px-4 py-3 pr-12"
+                {...register("password")}
               />
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-subtle transition-colors hover:text-ink"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-pressed={showPassword}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded text-ink-subtle transition-colors hover:text-ink"
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
+            {errors.password && (
+              <p id="password-error" role="alert" className="mt-1.5 text-sm text-hard">
+                {errors.password.message}
+              </p>
+            )}
           </div>
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={isSubmitting}
             className="btn btn-primary mt-8 w-full py-3"
           >
-            {loading ? "Signing in..." : "Sign in"}
+            {isSubmitting ? "Signing in..." : "Sign in"}
           </button>
 
           <p className="mt-6 text-center text-sm text-ink-muted">

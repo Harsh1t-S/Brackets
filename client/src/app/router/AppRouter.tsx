@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useParams } from "react-router-dom";
 
 import MainLayout from "../layouts/MainLayout";
 import { RequireAuth, RequireAdmin, GuestOnly } from "./ProtectedRoute";
+import { Spinner } from "../../components/common/Spinner";
 
 import HomePage from "../../features/home/HomePage";
 import ProblemsPage from "../../features/problems/pages/ProblemsPage";
@@ -40,8 +41,13 @@ export default function AppRouter() {
       <ScrollToTop />
       <Suspense
         fallback={
-          <div className="flex h-screen items-center justify-center bg-canvas text-ink-muted">
-            Loading…
+          <div
+            role="status"
+            aria-live="polite"
+            className="flex h-screen items-center justify-center gap-3 bg-canvas text-ink-muted"
+          >
+            <Spinner size={24} />
+            <span className="text-sm">Loading…</span>
           </div>
         }
       >

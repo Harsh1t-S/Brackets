@@ -62,6 +62,8 @@ export function AuthProvider({
   }
 
   useEffect(() => {
+    // Bootstrap the session once on mount; loadUser updates state async.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadUser();
   }, []);
 
@@ -92,6 +94,7 @@ export function AuthProvider({
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   return useContext(AuthContext);
 }
