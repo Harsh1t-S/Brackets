@@ -21,6 +21,11 @@ export interface DashboardStats {
 
   recentBookmarks: ProblemSummaryRow[];
   recentSolved: ProblemSummaryRow[];
+
+  progress: {
+    totals: Record<string, number>;
+    solved: Record<string, number>;
+  };
 }
 
 class DashboardService {

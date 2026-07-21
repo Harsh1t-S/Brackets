@@ -69,6 +69,57 @@ export default function DashboardPage() {
         ))}
       </div>
 
+      {/* Progress by difficulty */}
+      {data.progress && (
+        <div className="card mt-8 p-6">
+          <h2 className="mb-5 text-lg font-semibold text-ink">
+            Progress by difficulty
+          </h2>
+          <div className="grid gap-5 sm:grid-cols-3">
+            {(
+              [
+                { key: "EASY", label: "Easy", bar: "bg-easy", text: "text-easy" },
+                { key: "MEDIUM", label: "Medium", bar: "bg-medium", text: "text-medium" },
+                { key: "HARD", label: "Hard", bar: "bg-hard", text: "text-hard" },
+              ] as const
+            ).map(({ key, label, bar, text }) => {
+              const total = data.progress.totals[key] ?? 0;
+              const done = data.progress.solved[key] ?? 0;
+              const pct = total ? Math.round((done / total) * 100) : 0;
+
+              return (
+                <div key={key}>
+                  <div className="mb-2 flex items-baseline justify-between">
+                    <span className={`text-sm font-semibold ${text}`}>
+                      {label}
+                    </span>
+                    <span className="text-sm text-ink-muted">
+                      <span className="font-semibold text-ink">{done}</span>
+                      {" / "}
+                      {total}
+                    </span>
+                  </div>
+                  <div
+                    className="h-2 overflow-hidden rounded-full bg-surface-2"
+                    role="progressbar"
+                    aria-valuenow={pct}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={`${label} problems solved`}
+                  >
+                    <div
+                      className={`h-full rounded-full ${bar} transition-all duration-500`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <p className="mt-1.5 text-xs text-ink-subtle">{pct}% solved</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Recently solved */}
       <div className="card mt-8 p-6">
         <div className="mb-5 flex items-center justify-between">

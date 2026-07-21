@@ -73,6 +73,27 @@ export const getFilterFacets = async (): Promise<FilterFacets> => {
   return response.data.data;
 };
 
+export interface ProblemSummary {
+  id: string;
+  number: number;
+  title: string;
+  slug: string;
+  difficulty: "EASY" | "MEDIUM" | "HARD";
+}
+
+export interface ProblemContext {
+  prev: ProblemSummary | null;
+  next: ProblemSummary | null;
+  related: ProblemSummary[];
+}
+
+export const getProblemContext = async (
+  id: string
+): Promise<ProblemContext> => {
+  const response = await api.get(`/problems/${id}/context`);
+  return response.data.data;
+};
+
 export const getStats = async (): Promise<PlatformStats> => {
   const response = await api.get("/problems/stats");
   return response.data.data;

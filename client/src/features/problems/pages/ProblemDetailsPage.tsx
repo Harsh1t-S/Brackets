@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { useProblem } from "../hooks/useProblem";
 import ProblemActions from "../components/ProblemActions";
 import SolutionPanel from "../components/SolutionPanel";
+import ProblemNav from "../components/ProblemNav";
 import CodeWorkspace from "../components/CodeWorkspace";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
 import { difficultyBadgeClass, difficultyLabel } from "../../../lib/difficulty";
@@ -188,6 +189,8 @@ export default function ProblemDetailsPage() {
           </section>
 
           <SolutionPanel problem={problem} />
+
+          <ProblemNav problemId={problem.id} />
         </div>
 
         {/* Right — code workspace (sticks while the statement scrolls) */}

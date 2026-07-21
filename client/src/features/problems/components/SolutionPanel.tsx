@@ -1,13 +1,15 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Eye, EyeOff, Lock } from "lucide-react";
+import { Eye, EyeOff, Lock, FileQuestion } from "lucide-react";
 import type { Problem } from "../../../types/problem";
+import { useAuth } from "../../auth/context/AuthContext";
 
 interface Props {
   problem: Problem;
 }
 
 export default function SolutionPanel({ problem }: Props) {
+  const { user } = useAuth();
   const languages = useMemo(
     () => Object.keys(problem.solutionCode ?? {}),
     [problem]
@@ -15,25 +17,31 @@ export default function SolutionPanel({ problem }: Props) {
   const [language, setLanguage] = useState(languages[0] ?? "javascript");
   const [show, setShow] = useState(false);
 
-  // The API only ships solutions to signed-in users.
+  // An empty solutionCode means one of two different things: the API
+  // withheld it (signed out), or nobody has written one yet. Saying
+  // "sign in" to an already-signed-in user is just confusing.
   if (languages.length === 0) {
     return (
       <section className="mt-10">
         <div className="card flex items-center justify-between gap-4 p-4">
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-2 text-ink-subtle">
-              <Lock size={18} />
+              {user ? <FileQuestion size={18} /> : <Lock size={18} />}
             </span>
             <div>
               <h2 className="font-semibold text-ink">Solution</h2>
               <p className="text-sm text-ink-muted">
-                Sign in to view the reference solution.
+                {user
+                  ? "No reference solution has been added for this problem yet."
+                  : "Sign in to view the reference solution."}
               </p>
             </div>
           </div>
-          <Link to="/login" className="btn btn-secondary px-4 py-2 text-sm">
-            Sign in
-          </Link>
+          {!user && (
+            <Link to="/login" className="btn btn-secondary px-4 py-2 text-sm">
+              Sign in
+            </Link>
+          )}
         </div>
       </section>
     );

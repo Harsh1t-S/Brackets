@@ -89,6 +89,12 @@ model Problem {
   testCases TestCase[]
   votes     ProblemVote[]
   solvedBy  SolvedProblem[]
+
+  // List filters hit these constantly; GIN makes the array
+  // containment/overlap operators (@>, &&) index-backed.
+  @@index([difficulty])
+  @@index([tags(ops: ArrayOps)], type: Gin)
+  @@index([companies(ops: ArrayOps)], type: Gin)
 }
 
 model ProblemVote {

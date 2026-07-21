@@ -17,6 +17,8 @@ router.get("/:id/vote", protect, controller.myVote);
 router.post("/:id/solved", protect, controller.solved);
 router.get("/:id/solved", protect, controller.mySolved);
 
+router.get("/:id/context", controller.context);
+
 router.get("/:slug", optionalAuth, controller.details);
 
 export default router;

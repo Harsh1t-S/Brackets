@@ -1,5 +1,6 @@
 import { Difficulty, Prisma } from "@prisma/client";
 import prisma from "../../prisma/prisma";
+import { sanitizeRichText } from "../../utils/sanitize";
 
 export interface TestCaseInput {
   input: string;
@@ -124,9 +125,9 @@ export class AdminProblemService {
         number,
         title: data.title,
         slug: data.slug,
-        description: data.description,
+        description: sanitizeRichText(data.description),
         difficulty: data.difficulty,
-        constraints: data.constraints,
+        constraints: sanitizeRichText(data.constraints),
         examples: data.examples,
         starterCode: data.starterCode,
         solutionCode: data.solutionCode,
@@ -159,6 +160,14 @@ export class AdminProblemService {
     }
 
     const { testCases, ...rest } = data;
+
+    // Same sanitization as create — an edit must not smuggle markup in.
+    if (rest.description !== undefined) {
+      rest.description = sanitizeRichText(rest.description);
+    }
+    if (rest.constraints !== undefined) {
+      rest.constraints = sanitizeRichText(rest.constraints);
+    }
 
     return prisma.$transaction(async (tx) => {
       if (testCases) {

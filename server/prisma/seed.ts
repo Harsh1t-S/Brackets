@@ -1,5 +1,6 @@
 import { PrismaClient, Difficulty } from "@prisma/client";
 import bcrypt from "bcrypt";
+import { solutions } from "./solutions";
 
 const prisma = new PrismaClient();
 
@@ -1104,7 +1105,13 @@ async function main() {
   let nextNumber = maxAgg._max.number ?? 0;
 
   for (const raw of problems) {
-    const { testCases, ...p } = raw;
+    const { testCases, ...rest } = raw;
+
+    // Reference solutions live in solutions.ts; merge them in by slug.
+    const p = {
+      ...rest,
+      solutionCode: { ...rest.solutionCode, ...(solutions[rest.slug] ?? {}) },
+    };
 
     const existing = await prisma.problem.findUnique({
       where: { slug: p.slug },

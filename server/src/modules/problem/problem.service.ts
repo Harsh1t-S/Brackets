@@ -42,10 +42,25 @@ export const getProblems = async ({
   userId?: string;
 }) => {
   const skip = (page - 1) * limit;
-  const orderBy = SORTS[sort ?? "number"] ?? SORTS.number;
   const filters: Prisma.Sql[] = [];
 
   const term = search?.trim();
+
+  // With a search term and no explicit sort, rank by how well each row
+  // matches: exact title > title prefix > title contains > tag > company.
+  const orderBy =
+    term && !sort
+      ? Prisma.sql`
+          CASE
+            WHEN lower("title") = lower(${term}) THEN 0
+            WHEN "title" ILIKE ${term + "%"} THEN 1
+            WHEN "title" ILIKE ${`%${term}%`} THEN 2
+            WHEN EXISTS (
+              SELECT 1 FROM unnest("tags") AS t WHERE t ILIKE ${`%${term}%`}
+            ) THEN 3
+            ELSE 4
+          END ASC, "number" ASC`
+      : SORTS[sort ?? "number"] ?? SORTS.number;
   if (term) {
     // Match the term against the title, any tag, or any company — all
     // case-insensitive and partial (ILIKE).
@@ -135,6 +150,53 @@ export const getProblems = async ({
     page,
     totalPages: Math.ceil(total / limit),
   };
+};
+
+/**
+ * Neighbours by problem number, plus a few problems sharing tags — lets a
+ * solver keep moving instead of bouncing back to the list.
+ */
+export const getProblemContext = async (problemId: string) => {
+  const current = await prisma.problem.findUnique({
+    where: { id: problemId },
+    select: { number: true, tags: true },
+  });
+
+  if (!current) return { prev: null, next: null, related: [] };
+
+  const summary = {
+    id: true,
+    number: true,
+    title: true,
+    slug: true,
+    difficulty: true,
+  } as const;
+
+  const [prev, next, related] = await Promise.all([
+    prisma.problem.findFirst({
+      where: { number: { lt: current.number } },
+      orderBy: { number: "desc" },
+      select: summary,
+    }),
+    prisma.problem.findFirst({
+      where: { number: { gt: current.number } },
+      orderBy: { number: "asc" },
+      select: summary,
+    }),
+    current.tags.length
+      ? prisma.problem.findMany({
+          where: {
+            id: { not: problemId },
+            tags: { hasSome: current.tags },
+          },
+          orderBy: { number: "asc" },
+          take: 5,
+          select: summary,
+        })
+      : Promise.resolve([]),
+  ]);
+
+  return { prev, next, related };
 };
 
 /**
