@@ -20,7 +20,7 @@ function navClass({ isActive }: { isActive: boolean }) {
 }
 
 export default function Navbar() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
 
@@ -64,7 +64,14 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center gap-2">
-            {!user ? (
+            {loading ? (
+              // Placeholder while the session resolves — avoids flashing
+              // Login/Register at an already signed-in user.
+              <div
+                aria-hidden
+                className="hidden h-9 w-28 animate-pulse rounded-xl bg-surface-2 sm:block"
+              />
+            ) : !user ? (
               <div className="hidden items-center gap-2 sm:flex">
                 <Link to="/login" className="btn btn-ghost px-4 py-2 text-sm">
                   Login

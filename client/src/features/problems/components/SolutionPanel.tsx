@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Eye, EyeOff, Lock, FileQuestion } from "lucide-react";
 import type { Problem } from "../../../types/problem";
@@ -16,6 +16,16 @@ export default function SolutionPanel({ problem }: Props) {
   );
   const [language, setLanguage] = useState(languages[0] ?? "javascript");
   const [show, setShow] = useState(false);
+
+  // Same remount caveat as the editor: re-seed on problem change so a
+  // cached navigation can't leave the previous problem's solution showing.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLanguage(Object.keys(problem.solutionCode ?? {})[0] ?? "javascript");
+     
+    setShow(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [problem.id]);
 
   // An empty solutionCode means one of two different things: the API
   // withheld it (signed out), or nobody has written one yet. Saying

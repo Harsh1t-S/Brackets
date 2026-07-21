@@ -36,8 +36,12 @@ export function AuthProvider({
     null
   );
 
-  const [loading, setLoading] =
-    useState(true);
+  // Start "loading" only when a token exists. A signed-out visitor then
+  // renders the real signed-out UI immediately, and a signed-in one shows
+  // a placeholder instead of flashing Login/Register before /auth/me lands.
+  const [loading, setLoading] = useState(
+    () => !!localStorage.getItem("token")
+  );
 
   async function loadUser() {
     const token =

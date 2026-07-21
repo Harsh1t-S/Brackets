@@ -4,6 +4,8 @@ import {
   ChevronLeft,
   ChevronRight,
   List,
+  Play,
+  Send,
   Shuffle,
 } from "lucide-react";
 import { useProblemContext } from "../hooks/useProblems";
@@ -17,7 +19,15 @@ import UserMenu from "../../../components/UserMenu";
  * it carries its own branding and account controls. Everything you need to
  * keep moving (list, prev, next, shuffle) sits on the left.
  */
-export default function ProblemTopNav({ problemId }: { problemId: string }) {
+export default function ProblemTopNav({
+  problemId,
+  onRun,
+  onSubmit,
+}: {
+  problemId: string;
+  onRun: () => void;
+  onSubmit: () => void;
+}) {
   const { data } = useProblemContext(problemId);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -38,7 +48,7 @@ export default function ProblemTopNav({ problemId }: { problemId: string }) {
   }
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-line bg-surface px-4">
+    <header className="relative flex h-14 shrink-0 items-center justify-between gap-3 border-b border-line bg-surface px-4">
       <div className="flex items-center gap-3">
         <Link to="/" className="flex items-center gap-2" aria-label="Bracket home">
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand text-on-brand">
@@ -99,6 +109,25 @@ export default function ProblemTopNav({ problemId }: { problemId: string }) {
             <Shuffle size={15} />
           </button>
         </div>
+      </div>
+
+      {/* Run / Submit live here so they're always reachable, whatever the
+          panes are doing — same placement as LeetCode. */}
+      <div className="absolute left-1/2 flex -translate-x-1/2 items-center gap-2">
+        <button
+          onClick={onRun}
+          className="btn btn-secondary px-4 py-1.5 text-sm"
+          title="Run against the sample tests"
+        >
+          <Play size={15} /> Run
+        </button>
+        <button
+          onClick={onSubmit}
+          className="btn btn-primary btn-glow px-4 py-1.5 text-sm"
+          title="Submit your solution"
+        >
+          <Send size={15} /> Submit
+        </button>
       </div>
 
       {user ? (

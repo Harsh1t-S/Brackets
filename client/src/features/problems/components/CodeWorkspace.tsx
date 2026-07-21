@@ -1,10 +1,14 @@
-import { useMemo, useState } from "react";
-import { Play, Send, RotateCcw, Terminal, ChevronDown, Code2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { RotateCcw, Terminal, ChevronDown, Code2 } from "lucide-react";
 import type { Problem } from "../../../types/problem";
 import { useToast } from "../../../components/common/Toast";
+import { useSplitPane } from "../hooks/useSplitPane";
 
 interface Props {
   problem: Problem;
+  /** Console tab is lifted so Run/Submit can live in the top bar. */
+  consoleTab: "testcase" | "result";
+  onConsoleTabChange: (tab: "testcase" | "result") => void;
 }
 
 const langLabels: Record<string, string> = {
@@ -30,11 +34,13 @@ const langExt: Record<string, string> = {
 };
 
 /**
- * Two stacked panels — code above, testcases below — each with its own
- * chrome and its own scroll, so the workspace reads as distinct regions
- * rather than one long card.
+ * Code above, testcases below, with a draggable divider between them.
  */
-export default function CodeWorkspace({ problem }: Props) {
+export default function CodeWorkspace({
+  problem,
+  consoleTab,
+  onConsoleTabChange,
+}: Props) {
   const toast = useToast();
   const languages = useMemo(
     () => Object.keys(problem.starterCode),
@@ -43,8 +49,29 @@ export default function CodeWorkspace({ problem }: Props) {
 
   const [language, setLanguage] = useState(languages[0] ?? "javascript");
   const [code, setCode] = useState(problem.starterCode[languages[0]] ?? "");
-  const [tab, setTab] = useState<"testcase" | "result">("testcase");
   const [activeCase, setActiveCase] = useState(0);
+
+  // Editor takes ~68% of the column by default; drag to rebalance.
+  const { size, dragging, containerRef, handleProps } = useSplitPane({
+    initial: 68,
+    min: 25,
+    max: 85,
+    direction: "vertical",
+  });
+
+  // Navigating to an already-cached problem doesn't unmount this component
+  // (no loading state to tear it down), so the editor would keep showing the
+  // previous problem's starter code. Re-seed it whenever the problem changes.
+  useEffect(() => {
+    const first = Object.keys(problem.starterCode)[0] ?? "javascript";
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLanguage(first);
+     
+    setCode(problem.starterCode[first] ?? "");
+     
+    setActiveCase(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [problem.id]);
 
   function changeLanguage(lang: string) {
     setLanguage(lang);
@@ -56,22 +83,15 @@ export default function CodeWorkspace({ problem }: Props) {
     toast("Editor reset to starter code", "info");
   }
 
-  function run() {
-    setTab("result");
-    toast("Runtime isn't connected yet — coming soon", "info");
-  }
-
-  function submit() {
-    setTab("result");
-    toast("Submissions aren't wired up yet — coming soon", "info");
-  }
-
   const lines = code.split("\n").length;
 
   return (
-    <div className="flex flex-col gap-4 lg:h-full lg:min-h-0">
+    <div ref={containerRef} className="flex flex-col lg:h-full lg:min-h-0">
       {/* ── Panel: code ─────────────────────────────────────────── */}
-      <section className="card flex min-h-[22rem] flex-col overflow-hidden lg:min-h-0 lg:flex-1">
+      <section
+        className="card flex min-h-[20rem] flex-col overflow-hidden lg:min-h-0"
+        style={{ flexBasis: `${size}%`, flexGrow: 0, flexShrink: 0 }}
+      >
         <header className="flex shrink-0 items-center justify-between border-b border-line bg-surface-2 px-4 py-2.5">
           <span className="inline-flex items-center gap-2 text-sm font-semibold text-ink">
             <Code2 size={15} className="text-brand" />
@@ -148,29 +168,25 @@ export default function CodeWorkspace({ problem }: Props) {
             />
           </div>
         </div>
-
-        <footer className="flex shrink-0 items-center justify-between gap-2 border-t border-line bg-surface-2 px-4 py-2.5">
-          <span className="hidden items-center gap-1.5 text-xs text-ink-subtle sm:flex">
-            <span className="h-1.5 w-1.5 rounded-full bg-medium" />
-            Not connected to a runtime
-          </span>
-          <div className="flex items-center gap-2">
-            <button onClick={run} className="btn btn-secondary px-4 py-2 text-sm">
-              <Play size={15} /> Run
-            </button>
-            <button
-              onClick={submit}
-              className="btn btn-primary btn-glow px-4 py-2 text-sm"
-            >
-              <Send size={15} /> Submit
-            </button>
-          </div>
-        </footer>
       </section>
 
+      {/* Draggable divider (desktop only — panes stack on mobile) */}
+      <div
+        {...handleProps}
+        aria-label="Resize code and testcases"
+        className={`group hidden shrink-0 cursor-row-resize items-center justify-center py-1.5 lg:flex ${
+          dragging ? "text-brand" : "text-ink-subtle"
+        }`}
+      >
+        <span
+          className={`h-1 w-10 rounded-full transition-colors ${
+            dragging ? "bg-brand" : "bg-line-strong group-hover:bg-brand/60"
+          }`}
+        />
+      </div>
+
       {/* ── Panel: testcases / result ───────────────────────────── */}
-      {/* Deliberately short: the editor should get most of the column. */}
-      <section className="card flex shrink-0 flex-col overflow-hidden lg:h-[13rem]">
+      <section className="card mt-3 flex min-h-0 flex-1 flex-col overflow-hidden lg:mt-0">
         <div
           role="tablist"
           aria-label="Console"
@@ -180,10 +196,10 @@ export default function CodeWorkspace({ problem }: Props) {
             <button
               key={t}
               role="tab"
-              aria-selected={tab === t}
-              onClick={() => setTab(t)}
+              aria-selected={consoleTab === t}
+              onClick={() => onConsoleTabChange(t)}
               className={`-mb-px border-b-2 py-2.5 text-sm font-medium transition-colors ${
-                tab === t
+                consoleTab === t
                   ? "border-brand text-ink"
                   : "border-transparent text-ink-subtle hover:text-ink-muted"
               }`}
@@ -194,7 +210,7 @@ export default function CodeWorkspace({ problem }: Props) {
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto p-4">
-          {tab === "testcase" ? (
+          {consoleTab === "testcase" ? (
             problem.examples.length ? (
               <>
                 <div className="mb-3 flex flex-wrap gap-2">

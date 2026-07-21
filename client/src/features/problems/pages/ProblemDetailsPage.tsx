@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { Tag, Building2, Lightbulb, ChevronDown } from "lucide-react";
 import { useProblem } from "../hooks/useProblem";
@@ -11,6 +11,8 @@ import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
 import { difficultyBadgeClass, difficultyLabel } from "../../../lib/difficulty";
 import { PageLoader } from "../../../components/common/Spinner";
 import { companyLogoUrl } from "../../../lib/companyLogo";
+import { useToast } from "../../../components/common/Toast";
+import { useSplitPane } from "../hooks/useSplitPane";
 
 type Pill = "topics" | "companies" | "solution";
 
@@ -19,6 +21,38 @@ export default function ProblemDetailsPage() {
   const { key = "", slug } = useParams();
   const { data: problem, isLoading, isError } = useProblem(key);
   const [openPill, setOpenPill] = useState<Pill | null>(null);
+  const toast = useToast();
+
+  // Console tab is owned here so the top bar's Run/Submit can drive it.
+  const [consoleTab, setConsoleTab] = useState<"testcase" | "result">(
+    "testcase"
+  );
+
+  // Statement / workspace split — drag the divider to rebalance.
+  const { size, dragging, containerRef, handleProps } = useSplitPane({
+    initial: 55,
+    min: 30,
+    max: 72,
+    direction: "horizontal",
+  });
+
+  // Collapse any open pill and reset the console when moving problems.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setOpenPill(null);
+     
+    setConsoleTab("testcase");
+  }, [problem?.id]);
+
+  function run() {
+    setConsoleTab("result");
+    toast("Runtime isn't connected yet — coming soon", "info");
+  }
+
+  function submit() {
+    setConsoleTab("result");
+    toast("Submissions aren't wired up yet — coming soon", "info");
+  }
 
   useDocumentTitle(
     problem ? `${problem.number}. ${problem.title}` : "Problem"
@@ -57,14 +91,19 @@ export default function ProblemDetailsPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-canvas lg:h-screen lg:overflow-hidden">
-      <ProblemTopNav problemId={problem.id} />
+      <ProblemTopNav problemId={problem.id} onRun={run} onSubmit={submit} />
 
       <main className="flex-1 p-3 lg:min-h-0">
-        {/* Statement | code | testcases — the code column is a touch
-            narrower so long lines still fit but the statement breathes. */}
-        <div className="grid gap-3 lg:h-full lg:grid-cols-[1.15fr_0.85fr]">
+        {/* Statement | code | testcases, with draggable dividers. */}
+        <div
+          ref={containerRef}
+          className="flex flex-col gap-3 lg:h-full lg:flex-row lg:gap-0"
+        >
           {/* ── Panel: statement ────────────────────────────────── */}
-          <section className="card flex flex-col overflow-hidden lg:min-h-0">
+          <section
+            className="card flex flex-col overflow-hidden lg:min-h-0"
+            style={{ flexBasis: `${size}%`, flexGrow: 0, flexShrink: 0 }}
+          >
             <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
               <h1 className="text-2xl font-bold tracking-tight text-ink">
                 <span className="mr-2 text-ink-subtle">#{problem.number}</span>
@@ -233,8 +272,29 @@ export default function ProblemDetailsPage() {
             </div>
           </section>
 
+          {/* Draggable divider between statement and workspace */}
+          <div
+            {...handleProps}
+            aria-label="Resize statement and workspace"
+            className={`group hidden shrink-0 cursor-col-resize items-center justify-center px-1.5 lg:flex ${
+              dragging ? "text-brand" : "text-ink-subtle"
+            }`}
+          >
+            <span
+              className={`h-10 w-1 rounded-full transition-colors ${
+                dragging ? "bg-brand" : "bg-line-strong group-hover:bg-brand/60"
+              }`}
+            />
+          </div>
+
           {/* ── Panels: code + testcases ──────────────────────────── */}
-          <CodeWorkspace problem={problem} />
+          <div className="min-w-0 flex-1 lg:min-h-0">
+            <CodeWorkspace
+              problem={problem}
+              consoleTab={consoleTab}
+              onConsoleTabChange={setConsoleTab}
+            />
+          </div>
         </div>
       </main>
     </div>
