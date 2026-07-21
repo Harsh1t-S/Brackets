@@ -153,6 +153,14 @@ export const getProblems = async ({
   };
 };
 
+/** A random problem — powers the shuffle button in the problem header. */
+export const getRandomProblem = async () => {
+  const rows = await prisma.$queryRaw<
+    { number: number; slug: string }[]
+  >`SELECT "number", "slug" FROM "Problem" ORDER BY random() LIMIT 1`;
+  return rows[0] ?? null;
+};
+
 /**
  * Neighbours by problem number, plus a few problems sharing tags — lets a
  * solver keep moving instead of bouncing back to the list.

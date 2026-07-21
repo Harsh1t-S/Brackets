@@ -94,6 +94,14 @@ export const getProblemContext = async (
   return response.data.data;
 };
 
+export const getRandomProblem = async (): Promise<{
+  number: number;
+  slug: string;
+}> => {
+  const response = await api.get("/problems/random");
+  return response.data.data;
+};
+
 export const getStats = async (): Promise<PlatformStats> => {
   const response = await api.get("/problems/stats");
   return response.data.data;

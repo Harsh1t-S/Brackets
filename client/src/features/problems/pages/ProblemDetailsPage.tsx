@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
 import { useProblem } from "../hooks/useProblem";
+import ProblemTopNav from "../components/ProblemTopNav";
 import ProblemActions from "../components/ProblemActions";
 import SolutionPanel from "../components/SolutionPanel";
 import ProblemNav from "../components/ProblemNav";
@@ -53,52 +53,19 @@ export default function ProblemDetailsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-6 py-8">
-      <Link
-        to="/problems"
-        className="mb-5 inline-flex items-center gap-1.5 text-sm font-medium text-ink-muted transition-colors hover:text-ink"
-      >
-        <ArrowLeft size={16} />
-        All problems
-      </Link>
+    <div className="mx-auto max-w-[1600px] px-4 py-4 sm:px-6">
+      <ProblemTopNav problemId={problem.id} />
 
-      <div className="grid grid-cols-12 gap-8">
-        {/* Left — problem statement */}
-        <div className="col-span-12 lg:col-span-7">
-          {/* Header: title, then one quiet meta line, then one action row. */}
-          <h1 className="flex flex-wrap items-center gap-3 text-3xl font-bold tracking-tight text-ink">
-            <span>
-              <span className="mr-2 text-ink-subtle">#{problem.number}</span>
-              {problem.title}
-            </span>
-            <span className={difficultyBadgeClass(problem.difficulty)}>
-              {difficultyLabel(problem.difficulty)}
-            </span>
-          </h1>
-
-          <div className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ink-subtle">
-            <span>{problem.acceptance}% acceptance</span>
-            {problem.tags.length > 0 && <span aria-hidden>·</span>}
-            {problem.tags.map((tag, i) => (
-              <span key={tag} className="flex items-center gap-2">
-                <Link
-                  to={`/problems?tags=${encodeURIComponent(tag)}`}
-                  className="text-ink-muted transition-colors hover:text-brand"
-                >
-                  {tag}
-                </Link>
-                {i < problem.tags.length - 1 && <span aria-hidden>·</span>}
-              </span>
-            ))}
-          </div>
-
-          <ProblemActions problem={problem} />
-
-          {/* Tabs keep description / solution / related from stacking up */}
+      {/* Three panels: statement | code | testcases. On large screens each
+          scrolls independently so the page itself never moves. */}
+      <div className="grid gap-4 lg:h-[calc(100vh-9.5rem)] lg:grid-cols-2">
+        {/* ── Panel: statement ──────────────────────────────────── */}
+        <section className="card flex flex-col overflow-hidden lg:min-h-0">
+          {/* Tab strip pinned to the top of the panel */}
           <div
             role="tablist"
             aria-label="Problem sections"
-            className="mt-6 flex items-center gap-5 border-b border-line"
+            className="flex shrink-0 items-center gap-5 border-b border-line bg-surface-2 px-5"
           >
             {TABS.map((t) => (
               <button
@@ -106,7 +73,7 @@ export default function ProblemDetailsPage() {
                 role="tab"
                 aria-selected={tab === t.id}
                 onClick={() => setTab(t.id)}
-                className={`-mb-px border-b-2 pb-2.5 text-sm font-medium transition-colors ${
+                className={`-mb-px border-b-2 py-2.5 text-sm font-medium transition-colors ${
                   tab === t.id
                     ? "border-brand text-ink"
                     : "border-transparent text-ink-subtle hover:text-ink-muted"
@@ -117,7 +84,37 @@ export default function ProblemDetailsPage() {
             ))}
           </div>
 
-          <div className="pt-6">
+          <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+            {/* Header: title, one quiet meta line, one action row. */}
+            <h1 className="flex flex-wrap items-center gap-3 text-2xl font-bold tracking-tight text-ink">
+              <span>
+                <span className="mr-2 text-ink-subtle">#{problem.number}</span>
+                {problem.title}
+              </span>
+              <span className={difficultyBadgeClass(problem.difficulty)}>
+                {difficultyLabel(problem.difficulty)}
+              </span>
+            </h1>
+
+            <div className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ink-subtle">
+              <span>{problem.acceptance}% acceptance</span>
+              {problem.tags.length > 0 && <span aria-hidden>·</span>}
+              {problem.tags.map((tag, i) => (
+                <span key={tag} className="flex items-center gap-2">
+                  <Link
+                    to={`/problems?tags=${encodeURIComponent(tag)}`}
+                    className="text-ink-muted transition-colors hover:text-brand"
+                  >
+                    {tag}
+                  </Link>
+                  {i < problem.tags.length - 1 && <span aria-hidden>·</span>}
+                </span>
+              ))}
+            </div>
+
+            <ProblemActions problem={problem} />
+
+            <div className="mt-6 border-t border-line pt-6">
             {tab === "description" && (
               <>
                 <div
@@ -134,13 +131,15 @@ export default function ProblemDetailsPage() {
                   </div>
                 )}
 
-                <div className="mt-8 space-y-4">
+                {/* Light treatment (bold label + rule) rather than a boxed
+                    card each — three stacked cards read as clutter. */}
+                <div className="mt-8 space-y-6">
                   {problem.examples.map((example, index) => (
-                    <div key={index} className="card overflow-hidden">
-                      <div className="border-b border-line bg-surface-2 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-ink-subtle">
+                    <div key={index}>
+                      <p className="mb-2 text-sm font-semibold text-ink">
                         Example {index + 1}
-                      </div>
-                      <div className="space-y-2 p-4 font-mono text-sm">
+                      </p>
+                      <div className="space-y-1.5 border-l-2 border-line pl-4 font-mono text-sm">
                         <p className="text-ink">
                           <span className="text-ink-subtle">Input: </span>
                           {example.input}
@@ -193,15 +192,12 @@ export default function ProblemDetailsPage() {
             {tab === "solution" && <SolutionPanel problem={problem} />}
 
             {tab === "related" && <ProblemNav problemId={problem.id} />}
+            </div>
           </div>
-        </div>
+        </section>
 
-        {/* Right — code workspace (sticks while the statement scrolls) */}
-        <div className="col-span-12 lg:col-span-5">
-          <div className="lg:sticky lg:top-24">
-            <CodeWorkspace problem={problem} />
-          </div>
-        </div>
+        {/* ── Panels: code + testcases ───────────────────────────── */}
+        <CodeWorkspace problem={problem} />
       </div>
     </div>
   );

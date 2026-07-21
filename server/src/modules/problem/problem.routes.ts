@@ -8,8 +8,10 @@ const router = Router();
 // optionalAuth so signed-in users get solved marks and status filters.
 router.get("/", optionalAuth, controller.list);
 
+// Static paths must precede "/:slug" so they aren't swallowed by it.
 router.get("/stats", controller.stats);
 router.get("/filters", controller.filters);
+router.get("/random", controller.random);
 
 router.post("/:id/vote", protect, controller.vote);
 router.get("/:id/vote", protect, controller.myVote);

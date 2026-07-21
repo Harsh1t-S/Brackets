@@ -9,6 +9,7 @@ import {
   getMySolved,
   getFilterFacets,
   getProblemContext,
+  getRandomProblem,
 } from "./problem.service";
 import { voteSchema } from "./problem.validation";
 import {
@@ -96,6 +97,12 @@ export const list = asyncHandler(async (req: Request, res: Response) => {
 
 export const filters = asyncHandler(async (_req: Request, res: Response) => {
   const data = await getFilterFacets();
+  res.status(200).json({ success: true, data });
+});
+
+export const random = asyncHandler(async (_req: Request, res: Response) => {
+  const data = await getRandomProblem();
+  if (!data) throw new ApiError(404, "No problems available.");
   res.status(200).json({ success: true, data });
 });
 
