@@ -8,6 +8,15 @@ interface LoginInput {
   password: string;
 }
 
+/**
+ * A valid bcrypt hash of a value nobody can supply. Comparing against it on
+ * the "no such user" path keeps the response time of an unknown email in the
+ * same ballpark as a known one — otherwise a miss returns in ~1ms and a hit
+ * in ~80ms, which is enough to enumerate registered addresses despite the
+ * deliberately vague error message.
+ */
+const DUMMY_HASH = bcrypt.hashSync("no-such-user-placeholder", 10);
+
 export const login = async ({
   email,
   password,
@@ -18,16 +27,12 @@ export const login = async ({
     },
   });
 
-  if (!user) {
-    throw new ApiError(401, "Invalid email or password.");
-  }
-
   const isMatch = await bcrypt.compare(
     password,
-    user.password
+    user?.password ?? DUMMY_HASH
   );
 
-  if (!isMatch) {
+  if (!user || !isMatch) {
     throw new ApiError(401, "Invalid email or password.");
   }
 

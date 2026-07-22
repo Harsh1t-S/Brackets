@@ -25,7 +25,6 @@ app.use(helmet());
 // Only the real frontends (plus local dev) may call the API from a browser.
 const allowedOrigins = [
   "https://bracketx.vercel.app",
-  "https://codeforge-c4mz.onrender.com",
   "http://localhost:5173",
 ];
 

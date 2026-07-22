@@ -1,5 +1,6 @@
 import prisma from "../../prisma/prisma";
 import { Prisma } from "@prisma/client";
+import { ApiError } from "../../utils/ApiError";
 
 const DIFFICULTIES = new Set(["EASY", "MEDIUM", "HARD"]);
 
@@ -10,6 +11,16 @@ const SORTS: Record<string, Prisma.Sql> = {
   likes: Prisma.raw(`"likes" DESC`),
   newest: Prisma.raw(`"createdAt" DESC`),
 };
+
+/**
+ * Neutralise LIKE metacharacters in a user's search term.
+ *
+ * The term is a bound parameter, so this was never an injection risk — but
+ * `%` and `_` are wildcards *inside* the pattern, so searching for "50%"
+ * matched every row and "a_b" matched "axb". Backslash is Postgres' default
+ * LIKE escape character, so escaping it first keeps a literal backslash literal.
+ */
+const escapeLike = (term: string) => term.replace(/[\\%_]/g, "\\$&");
 
 /** `["a","b"]` -> SQL `ARRAY['a','b']::text[]` (values stay bound params). */
 const textArray = (values: string[]) =>
@@ -45,6 +56,8 @@ export const getProblems = async ({
   const filters: Prisma.Sql[] = [];
 
   const term = search?.trim();
+  // Equality comparisons use the raw term; every ILIKE pattern uses this.
+  const escaped = term ? escapeLike(term) : "";
 
   // With a search term, rank by how well each row matches: exact title >
   // title prefix > title contains > tag > company. Only meaningful with a
@@ -54,18 +67,21 @@ export const getProblems = async ({
       ? Prisma.sql`
           CASE
             WHEN lower("title") = lower(${term}) THEN 0
-            WHEN "title" ILIKE ${term + "%"} THEN 1
-            WHEN "title" ILIKE ${`%${term}%`} THEN 2
+            WHEN "title" ILIKE ${escaped + "%"} THEN 1
+            WHEN "title" ILIKE ${`%${escaped}%`} THEN 2
             WHEN EXISTS (
-              SELECT 1 FROM unnest("tags") AS t WHERE t ILIKE ${`%${term}%`}
+              SELECT 1 FROM unnest("tags") AS t WHERE t ILIKE ${`%${escaped}%`}
             ) THEN 3
-            ELSE 4
+            WHEN EXISTS (
+              SELECT 1 FROM unnest("companies") AS c WHERE c ILIKE ${`%${escaped}%`}
+            ) THEN 4
+            ELSE 5
           END ASC, "number" ASC`
       : SORTS[sort ?? "number"] ?? SORTS.number;
   if (term) {
     // Match the term against the title, any tag, or any company — all
     // case-insensitive and partial (ILIKE).
-    const like = `%${term}%`;
+    const like = `%${escaped}%`;
     filters.push(Prisma.sql`(
       "title" ILIKE ${like}
       OR EXISTS (SELECT 1 FROM unnest("tags") AS tg WHERE tg ILIKE ${like})
@@ -244,43 +260,75 @@ export const getProblem = async (key: string) => {
   });
 };
 
+/**
+ * Record a vote and refresh the cached counters on the problem.
+ *
+ * The counters used to be nudged by a delta computed from a read taken
+ * *before* the transaction opened. Two overlapping requests (a double-click,
+ * an axios retry) both read "no vote", both added +1, and the single upserted
+ * row left `likes` permanently one above the real number of voters.
+ *
+ * Taking a row lock on the problem serialises voting on it, so the read and
+ * the write can't interleave. Deltas are kept (rather than recounting the
+ * vote rows) because the seeded like/dislike totals have no rows behind
+ * them — recomputing would reset every problem to roughly zero.
+ */
 export const setVote = async (
   userId: string,
   problemId: string,
   value: 1 | -1
 ) => {
-  const existing = await prisma.problemVote.findUnique({
-    where: { userId_problemId: { userId, problemId } },
-  });
+  return prisma.$transaction(async (tx) => {
+    // Serialise concurrent votes on this problem. Every other voter waits
+    // here until this transaction commits, so nobody can read a vote state
+    // that's about to change underneath them.
+    const locked = await tx.$queryRaw<{ id: string }[]>`
+      SELECT "id" FROM "Problem" WHERE "id" = ${problemId} FOR UPDATE
+    `;
+    if (!locked.length) {
+      throw new ApiError(404, "Problem not found.");
+    }
 
-  const old = existing?.value ?? 0;
-  // Clicking the same reaction again clears it (toggle), like LeetCode.
-  const next = old === value ? 0 : value;
+    const existing = await tx.problemVote.findUnique({
+      where: { userId_problemId: { userId, problemId } },
+    });
 
-  const likesDelta = (next === 1 ? 1 : 0) - (old === 1 ? 1 : 0);
-  const dislikesDelta = (next === -1 ? 1 : 0) - (old === -1 ? 1 : 0);
+    const old = existing?.value ?? 0;
+    // Clicking the same reaction again clears it (toggle), like LeetCode.
+    const next = old === value ? 0 : value;
 
-  const [problem] = await prisma.$transaction([
-    prisma.problem.update({
+    if (next === 0) {
+      if (existing) {
+        await tx.problemVote.delete({
+          where: { userId_problemId: { userId, problemId } },
+        });
+      }
+    } else {
+      await tx.problemVote.upsert({
+        where: { userId_problemId: { userId, problemId } },
+        update: { value: next },
+        create: { userId, problemId, value: next },
+      });
+    }
+
+    const likesDelta = (next === 1 ? 1 : 0) - (old === 1 ? 1 : 0);
+    const dislikesDelta = (next === -1 ? 1 : 0) - (old === -1 ? 1 : 0);
+
+    const problem = await tx.problem.update({
       where: { id: problemId },
       data: {
         likes: { increment: likesDelta },
         dislikes: { increment: dislikesDelta },
       },
       select: { likes: true, dislikes: true },
-    }),
-    next === 0
-      ? prisma.problemVote.delete({
-          where: { userId_problemId: { userId, problemId } },
-        })
-      : prisma.problemVote.upsert({
-          where: { userId_problemId: { userId, problemId } },
-          update: { value: next },
-          create: { userId, problemId, value: next },
-        }),
-  ]);
+    });
 
-  return { likes: problem.likes, dislikes: problem.dislikes, myVote: next };
+    return {
+      likes: problem.likes,
+      dislikes: problem.dislikes,
+      myVote: next,
+    };
+  });
 };
 
 export const toggleSolved = async (userId: string, problemId: string) => {
