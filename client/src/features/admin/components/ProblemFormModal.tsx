@@ -7,6 +7,7 @@ import type { AdminProblem, Difficulty, Example, TestCase } from "../../../types
 
 import { useCreateProblem, useUpdateProblem } from "../hooks/useAdminProblems";
 import { useToast } from "../../../components/common/Toast";
+import Modal from "../../../components/common/Modal";
 
 interface Props {
   open: boolean;
@@ -232,11 +233,17 @@ export default function ProblemFormModal({ open, onClose, editingProblem }: Prop
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-      <div className="card flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden shadow-2xl">
+    <Modal
+      open={open}
+      onClose={close}
+      labelledBy="problem-form-title"
+      dismissable={!loading}
+      className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden"
+    >
+      <>
         {/* Header */}
         <div className="flex items-center justify-between border-b border-line px-6 py-4">
-          <h2 className="text-lg font-bold text-ink">
+          <h2 id="problem-form-title" className="text-lg font-bold text-ink">
             {editingProblem ? "Edit Problem" : "Add Problem"}
           </h2>
           <button
@@ -542,8 +549,8 @@ export default function ProblemFormModal({ open, onClose, editingProblem }: Prop
               : "Save Problem"}
           </button>
         </div>
-      </div>
-    </div>
+      </>
+    </Modal>
   );
 }
 

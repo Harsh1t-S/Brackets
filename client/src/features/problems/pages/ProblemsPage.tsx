@@ -91,10 +91,28 @@ export default function ProblemsPage() {
       updateParams((next) => {
         if (debouncedSearch) next.set("search", debouncedSearch);
         else next.delete("search");
+        // "Relevance" only exists while there's a term to be relevant to.
+        // Leaving it in the URL left the <select> on a value with no
+        // matching <option>, which renders as an empty box — while the
+        // server quietly fell back to sorting by number.
+        if (!debouncedSearch && next.get("sort") === "relevance") {
+          next.delete("sort");
+        }
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch]);
+
+  // Adopt the URL's term when it changes from outside this input — browser
+  // back/forward, or a link carrying ?search=. Without this the box kept the
+  // old text while the results below it changed. Adjusting during render
+  // (rather than in an effect) avoids a second render pass with stale text.
+  const urlSearch = searchParams.get("search") ?? "";
+  const [syncedSearch, setSyncedSearch] = useState(urlSearch);
+  if (urlSearch !== syncedSearch) {
+    setSyncedSearch(urlSearch);
+    if (urlSearch !== debouncedSearch) setSearch(urlSearch);
+  }
 
   function clearAllFilters() {
     setSearch("");
@@ -121,6 +139,16 @@ export default function ProblemsPage() {
     sort,
     page,
   });
+
+  // A page past the end (a stale link, or a filter that narrowed the set)
+  // returned an empty list and the "no problems yet" empty state. Snap back
+  // to the last real page instead.
+  useEffect(() => {
+    if (data && data.totalPages > 0 && page > data.totalPages) {
+      updateParams((next) => next.set("page", String(data.totalPages)), false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, page]);
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">

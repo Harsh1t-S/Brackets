@@ -4,6 +4,7 @@ import type { AdminProblem } from "../../../types/adminProblem";
 
 import { useDeleteProblem } from "../hooks/useAdminProblems";
 import { useToast } from "../../../components/common/Toast";
+import Modal from "../../../components/common/Modal";
 
 interface Props {
   open: boolean;
@@ -33,13 +34,20 @@ export default function DeleteProblemModal({ open, problem, onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-      <div className="card w-full max-w-md p-6 shadow-2xl">
+    <Modal
+      open={open}
+      onClose={onClose}
+      labelledBy="delete-problem-title"
+      dismissable={!deleteMutation.isPending}
+    >
+      <>
         <div className="flex items-center gap-3">
           <span className="flex h-11 w-11 items-center justify-center rounded-full bg-hard/15 text-hard">
             <AlertTriangle size={22} />
           </span>
-          <h2 className="text-lg font-bold text-ink">Delete problem</h2>
+          <h2 id="delete-problem-title" className="text-lg font-bold text-ink">
+            Delete problem
+          </h2>
         </div>
 
         <p className="mt-4 text-ink-muted">
@@ -71,7 +79,7 @@ export default function DeleteProblemModal({ open, problem, onClose }: Props) {
             {deleteMutation.isPending ? "Deleting..." : "Delete"}
           </button>
         </div>
-      </div>
-    </div>
+      </>
+    </Modal>
   );
 }
