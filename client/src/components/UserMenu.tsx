@@ -1,13 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  ChevronDown,
-  LayoutDashboard,
-  Bookmark,
-  User,
-  LogOut,
-  ShieldCheck,
-} from "lucide-react";
+import { ChevronDown, User, LogOut, ShieldCheck } from "lucide-react";
 import { useAuth } from "../features/auth/context/AuthContext";
 import { avatarDataUri, getSavedAvatarHue } from "../lib/avatar";
 
@@ -39,9 +32,9 @@ export default function UserMenu() {
     };
   }, [open]);
 
+  // Dashboard and Bookmarks live in the top nav, so the dropdown holds only
+  // account-specific destinations — no destination appears twice.
   const items = [
-    { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { to: "/bookmarks", label: "Bookmarks", icon: Bookmark },
     { to: "/profile", label: "Profile", icon: User },
     ...(user?.role === "ADMIN"
       ? [{ to: "/admin", label: "Admin panel", icon: ShieldCheck }]
