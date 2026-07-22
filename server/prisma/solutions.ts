@@ -440,4 +440,399 @@ export const solutions: Record<string, Record<string, string>> = {
     .map(([value]) => value);
 }`,
   },
+
+  "armstrong-number": {
+    javascript: `function isArmstrong(n) {
+  const digits = String(n);
+  const power = digits.length;
+
+  let sum = 0;
+  for (const d of digits) sum += Number(d) ** power;
+
+  return sum === n;
+}`,
+  },
+
+  "best-time-to-buy-and-sell-stock-ii": {
+    javascript: `function maxProfit(prices) {
+  // Every upward step is profit we can capture.
+  let total = 0;
+  for (let i = 1; i < prices.length; i++) {
+    if (prices[i] > prices[i - 1]) total += prices[i] - prices[i - 1];
+  }
+  return total;
+}`,
+  },
+
+  "valid-palindrome": {
+    javascript: `function isPalindrome(s) {
+  const clean = s.toLowerCase().replace(/[^a-z0-9]/g, "");
+  let lo = 0;
+  let hi = clean.length - 1;
+
+  while (lo < hi) {
+    if (clean[lo] !== clean[hi]) return false;
+    lo++;
+    hi--;
+  }
+  return true;
+}`,
+  },
+
+  "merge-sorted-array": {
+    javascript: `function merge(nums1, m, nums2, n) {
+  // Fill from the back so we never overwrite unread values.
+  let i = m - 1;
+  let j = n - 1;
+  let k = m + n - 1;
+
+  while (j >= 0) {
+    nums1[k--] = i >= 0 && nums1[i] > nums2[j] ? nums1[i--] : nums2[j--];
+  }
+  return nums1;
+}`,
+  },
+
+  "linked-list-cycle": {
+    javascript: `function hasCycle(head) {
+  // Floyd's tortoise and hare: they meet iff there is a loop.
+  let slow = head;
+  let fast = head;
+
+  while (fast && fast.next) {
+    slow = slow.next;
+    fast = fast.next.next;
+    if (slow === fast) return true;
+  }
+  return false;
+}`,
+  },
+
+  "invert-binary-tree": {
+    javascript: `function invertTree(root) {
+  if (!root) return null;
+
+  const left = invertTree(root.left);
+  root.left = invertTree(root.right);
+  root.right = left;
+
+  return root;
+}`,
+  },
+
+  "maximum-depth-of-binary-tree": {
+    javascript: `function maxDepth(root) {
+  if (!root) return 0;
+  return 1 + Math.max(maxDepth(root.left), maxDepth(root.right));
+}`,
+  },
+
+  "same-tree": {
+    javascript: `function isSameTree(p, q) {
+  if (!p && !q) return true;
+  if (!p || !q || p.val !== q.val) return false;
+  return isSameTree(p.left, q.left) && isSameTree(p.right, q.right);
+}`,
+  },
+
+  "balanced-binary-tree": {
+    javascript: `function isBalanced(root) {
+  // Returns height, or -1 as soon as any subtree is unbalanced.
+  function height(node) {
+    if (!node) return 0;
+    const l = height(node.left);
+    if (l === -1) return -1;
+    const r = height(node.right);
+    if (r === -1) return -1;
+    return Math.abs(l - r) > 1 ? -1 : 1 + Math.max(l, r);
+  }
+
+  return height(root) !== -1;
+}`,
+  },
+
+  "binary-tree-level-order-traversal": {
+    javascript: `function levelOrder(root) {
+  if (!root) return [];
+
+  const res = [];
+  let queue = [root];
+
+  while (queue.length) {
+    res.push(queue.map((n) => n.val));
+    const next = [];
+    for (const n of queue) {
+      if (n.left) next.push(n.left);
+      if (n.right) next.push(n.right);
+    }
+    queue = next;
+  }
+
+  return res;
+}`,
+  },
+
+  "validate-binary-search-tree": {
+    javascript: `function isValidBST(root) {
+  // Every node must fall inside the range its ancestors allow.
+  function valid(node, low, high) {
+    if (!node) return true;
+    if (node.val <= low || node.val >= high) return false;
+    return valid(node.left, low, node.val) && valid(node.right, node.val, high);
+  }
+
+  return valid(root, -Infinity, Infinity);
+}`,
+  },
+
+  "lowest-common-ancestor-of-a-bst": {
+    javascript: `function lowestCommonAncestor(root, p, q) {
+  // Walk down while both targets sit on the same side.
+  let node = root;
+  while (node) {
+    if (p.val < node.val && q.val < node.val) node = node.left;
+    else if (p.val > node.val && q.val > node.val) node = node.right;
+    else return node;
+  }
+  return null;
+}`,
+  },
+
+  "implement-queue-using-stacks": {
+    javascript: `class MyQueue {
+  constructor() {
+    this.inbox = [];
+    this.outbox = [];
+  }
+
+  // Amortised O(1): each element moves between stacks at most once.
+  shift() {
+    if (!this.outbox.length) {
+      while (this.inbox.length) this.outbox.push(this.inbox.pop());
+    }
+  }
+
+  push(x) {
+    this.inbox.push(x);
+  }
+
+  pop() {
+    this.shift();
+    return this.outbox.pop();
+  }
+
+  peek() {
+    this.shift();
+    return this.outbox[this.outbox.length - 1];
+  }
+
+  empty() {
+    return !this.inbox.length && !this.outbox.length;
+  }
+}`,
+  },
+
+  "min-stack": {
+    javascript: `class MinStack {
+  constructor() {
+    this.stack = [];
+    this.mins = []; // running minimum, parallel to stack
+  }
+
+  push(val) {
+    this.stack.push(val);
+    this.mins.push(this.mins.length ? Math.min(val, this.getMin()) : val);
+  }
+
+  pop() {
+    this.mins.pop();
+    return this.stack.pop();
+  }
+
+  top() {
+    return this.stack[this.stack.length - 1];
+  }
+
+  getMin() {
+    return this.mins[this.mins.length - 1];
+  }
+}`,
+  },
+
+  "longest-palindromic-substring": {
+    javascript: `function longestPalindrome(s) {
+  let best = "";
+
+  // Expand around every centre (both odd and even length).
+  function expand(lo, hi) {
+    while (lo >= 0 && hi < s.length && s[lo] === s[hi]) {
+      lo--;
+      hi++;
+    }
+    return s.slice(lo + 1, hi);
+  }
+
+  for (let i = 0; i < s.length; i++) {
+    for (const candidate of [expand(i, i), expand(i, i + 1)]) {
+      if (candidate.length > best.length) best = candidate;
+    }
+  }
+
+  return best;
+}`,
+  },
+
+  "house-robber": {
+    javascript: `function rob(nums) {
+  // prev = best up to i-2, cur = best up to i-1.
+  let prev = 0;
+  let cur = 0;
+
+  for (const n of nums) {
+    [prev, cur] = [cur, Math.max(cur, prev + n)];
+  }
+
+  return cur;
+}`,
+  },
+
+  "unique-paths": {
+    javascript: `function uniquePaths(m, n) {
+  // Each cell is reachable from above + from the left.
+  const row = new Array(n).fill(1);
+
+  for (let r = 1; r < m; r++) {
+    for (let c = 1; c < n; c++) row[c] += row[c - 1];
+  }
+
+  return row[n - 1];
+}`,
+  },
+
+  "jump-game": {
+    javascript: `function canJump(nums) {
+  let reach = 0;
+
+  for (let i = 0; i < nums.length; i++) {
+    if (i > reach) return false; // stranded before this index
+    reach = Math.max(reach, i + nums[i]);
+  }
+
+  return true;
+}`,
+  },
+
+  "merge-intervals": {
+    javascript: `function merge(intervals) {
+  if (!intervals.length) return [];
+
+  intervals.sort((a, b) => a[0] - b[0]);
+  const res = [intervals[0].slice()];
+
+  for (const [start, end] of intervals.slice(1)) {
+    const last = res[res.length - 1];
+    if (start <= last[1]) last[1] = Math.max(last[1], end);
+    else res.push([start, end]);
+  }
+
+  return res;
+}`,
+  },
+
+  "longest-consecutive-sequence": {
+    javascript: `function longestConsecutive(nums) {
+  const set = new Set(nums);
+  let best = 0;
+
+  for (const n of set) {
+    // Only start counting from the beginning of a run.
+    if (set.has(n - 1)) continue;
+
+    let length = 1;
+    while (set.has(n + length)) length++;
+    best = Math.max(best, length);
+  }
+
+  return best;
+}`,
+  },
+
+  "subsets": {
+    javascript: `function subsets(nums) {
+  const res = [[]];
+
+  // Each new number doubles the answer set.
+  for (const n of nums) {
+    for (const existing of [...res]) res.push([...existing, n]);
+  }
+
+  return res;
+}`,
+  },
+
+  "permutations": {
+    javascript: `function permute(nums) {
+  const res = [];
+
+  function build(current, remaining) {
+    if (!remaining.length) {
+      res.push(current);
+      return;
+    }
+    remaining.forEach((n, i) => {
+      build([...current, n], [...remaining.slice(0, i), ...remaining.slice(i + 1)]);
+    });
+  }
+
+  build([], nums);
+  return res;
+}`,
+  },
+
+  "kth-largest-element-in-an-array": {
+    javascript: `function findKthLargest(nums, k) {
+  return [...nums].sort((a, b) => b - a)[k - 1];
+}`,
+  },
+
+  "min-cost-climbing-stairs": {
+    javascript: `function minCostClimbingStairs(cost) {
+  let one = 0; // cost to reach step i-1
+  let two = 0; // cost to reach step i-2
+
+  for (const c of cost) {
+    [two, one] = [one, Math.min(one, two) + c];
+  }
+
+  return Math.min(one, two);
+}`,
+  },
+
+  "ransom-note": {
+    javascript: `function canConstruct(ransomNote, magazine) {
+  const counts = new Map();
+  for (const ch of magazine) counts.set(ch, (counts.get(ch) ?? 0) + 1);
+
+  for (const ch of ransomNote) {
+    const left = counts.get(ch) ?? 0;
+    if (left === 0) return false;
+    counts.set(ch, left - 1);
+  }
+
+  return true;
+}`,
+  },
+
+  "first-unique-character-in-a-string": {
+    javascript: `function firstUniqChar(s) {
+  const counts = new Map();
+  for (const ch of s) counts.set(ch, (counts.get(ch) ?? 0) + 1);
+
+  for (let i = 0; i < s.length; i++) {
+    if (counts.get(s[i]) === 1) return i;
+  }
+
+  return -1;
+}`,
+  },
 };

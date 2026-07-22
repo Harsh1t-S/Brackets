@@ -1633,6 +1633,45 @@ const problems: Array<{
       { input: 's = "aabb"', output: "-1", isHidden: true },
     ],
   },
+  {
+    // Authored through the admin editor originally, which left empty
+    // <p><br></p> spacers and a duplicated markdown example block in the
+    // description. Managed here now so the seed keeps it clean.
+    title: "Armstrong Number",
+    slug: "armstrong-number",
+    difficulty: Difficulty.EASY,
+    description:
+      "Given a positive integer <code>n</code>, determine whether it is an Armstrong number — a number equal to the sum of its own digits, each raised to the power of the number of digits. Return <code>true</code> if it is, and <code>false</code> otherwise.",
+    constraints: "1 <= n <= 10^9",
+    acceptance: 68.0,
+    likes: 540,
+    dislikes: 30,
+    examples: [
+      {
+        input: "n = 153",
+        output: "true",
+        explanation: "153 has 3 digits, and 1³ + 5³ + 3³ = 1 + 125 + 27 = 153.",
+      },
+      {
+        input: "n = 9474",
+        output: "true",
+        explanation: "9⁴ + 4⁴ + 7⁴ + 4⁴ = 9474.",
+      },
+      { input: "n = 10", output: "false" },
+    ],
+    starterCode: {
+      javascript: "function isArmstrong(n) {\n\n}",
+      python: "def is_armstrong(n):\n    pass",
+    },
+    solutionCode: {},
+    tags: ["Math", "Number Theory"],
+    companies: ["Adobe", "Infosys", "TCS"],
+    testCases: [
+      { input: "n = 153", output: "true" },
+      { input: "n = 9474", output: "true" },
+      { input: "n = 10", output: "false", isHidden: true },
+    ],
+  },
 ];
 
 async function main() {

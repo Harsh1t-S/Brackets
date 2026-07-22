@@ -8,7 +8,14 @@ import sanitizeHtml from "sanitize-html";
 export function sanitizeRichText(html: string | undefined | null): string {
   if (!html) return "";
 
-  return sanitizeHtml(html, {
+  // The admin rich-text editor emits <p><br></p> for every blank line, which
+  // renders as a large empty gap. Collapse those before sanitizing so
+  // authored content doesn't end up full of holes.
+  const collapsed = html
+    .replace(/<p>(\s|&nbsp;|<br\s*\/?>)*<\/p>/gi, "")
+    .trim();
+
+  return sanitizeHtml(collapsed, {
     allowedTags: [
       "p", "br", "strong", "b", "em", "i", "u", "s",
       "ul", "ol", "li", "code", "pre", "blockquote",

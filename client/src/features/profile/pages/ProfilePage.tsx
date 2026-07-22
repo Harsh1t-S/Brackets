@@ -203,33 +203,37 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Avatar colour picker (used when no photo is uploaded) */}
-        <div className="mt-8 border-t border-line pt-6">
-          <p className="text-sm font-medium text-ink">Avatar colour</p>
-          <p className="mb-3 text-xs text-ink-subtle">
-            Used for your generated avatar when no photo is set — saved on
-            this device.
-          </p>
-          <div className="flex flex-wrap gap-2.5">
-            {HUES.map((h) => (
-              <button
-                key={h}
-                onClick={() => pickHue(h)}
-                aria-label={`Avatar colour ${h}`}
-                className={`flex h-9 w-9 items-center justify-center rounded-full ring-2 transition ${
-                  hue === h ? "ring-brand" : "ring-transparent hover:ring-line-strong"
-                }`}
-                style={{
-                  background: `linear-gradient(135deg, hsl(${h},72%,46%), hsl(${
-                    (h + 45) % 360
-                  },80%,58%))`,
-                }}
-              >
-                {hue === h && <Check size={16} className="text-white" />}
-              </button>
-            ))}
+        {/* Only meaningful for the generated avatar — a photo overrides it. */}
+        {!user?.avatar && (
+          <div className="mt-8 border-t border-line pt-6">
+            <p className="text-sm font-medium text-ink">Avatar colour</p>
+            <p className="mb-3 text-xs text-ink-subtle">
+              Colours your generated avatar — saved on this device. Upload a
+              photo above to use that instead.
+            </p>
+            <div className="flex flex-wrap gap-2.5">
+              {HUES.map((h) => (
+                <button
+                  key={h}
+                  onClick={() => pickHue(h)}
+                  aria-label={`Avatar colour ${h}`}
+                  className={`flex h-9 w-9 items-center justify-center rounded-full ring-2 transition ${
+                    hue === h
+                      ? "ring-brand"
+                      : "ring-transparent hover:ring-line-strong"
+                  }`}
+                  style={{
+                    background: `linear-gradient(135deg, hsl(${h},72%,46%), hsl(${
+                      (h + 45) % 360
+                    },80%,58%))`,
+                  }}
+                >
+                  {hue === h && <Check size={16} className="text-white" />}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Details */}
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
