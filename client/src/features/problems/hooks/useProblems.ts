@@ -7,9 +7,19 @@ import {
 } from "../../../services/problem.service";
 
 export function useProblems(query: ProblemQuery) {
+  // The cache key is the query object, so ["Array","Hash Map"] and
+  // ["Hash Map","Array"] hashed to different entries and refetched the same
+  // results. Order the list filters so selection order stops mattering.
+  const normalized: ProblemQuery = {
+    ...query,
+    difficulties: [...(query.difficulties ?? [])].sort(),
+    tags: [...(query.tags ?? [])].sort(),
+    companies: [...(query.companies ?? [])].sort(),
+  };
+
   return useQuery({
-    queryKey: ["problems", query],
-    queryFn: () => getProblems(query),
+    queryKey: ["problems", normalized],
+    queryFn: () => getProblems(normalized),
   });
 }
 

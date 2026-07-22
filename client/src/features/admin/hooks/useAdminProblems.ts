@@ -2,6 +2,7 @@ import {
   useQuery,
   useMutation,
   useQueryClient,
+  type QueryClient,
 } from "@tanstack/react-query";
 
 import adminProblemService, {
@@ -12,6 +13,23 @@ import adminProblemService, {
 import type { AdminProblemsResponse } from "../../../types/adminProblem";
 
 const QUERY_KEY = "admin-problems";
+
+/**
+ * Admin writes change the same rows the public pages read, so the public
+ * caches have to drop too — otherwise an edited title keeps showing the old
+ * value on /problems until the cache ages out or the tab is reloaded.
+ */
+function invalidateProblemViews(queryClient: QueryClient) {
+  for (const key of [
+    [QUERY_KEY],
+    ["platform-stats"],
+    ["problems"],
+    ["problem"],
+    ["problem-filters"],
+  ]) {
+    queryClient.invalidateQueries({ queryKey: key });
+  }
+}
 
 export const useAdminProblems = (query: AdminProblemQuery = {}) => {
   return useQuery<AdminProblemsResponse>({
@@ -28,10 +46,7 @@ export const useCreateProblem = () => {
     mutationFn: (data: ProblemPayload) =>
       adminProblemService.createProblem(data),
 
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
-      queryClient.invalidateQueries({ queryKey: ["platform-stats"] });
-    },
+    onSuccess: () => invalidateProblemViews(queryClient),
   });
 };
 
@@ -47,9 +62,7 @@ export const useUpdateProblem = () => {
       data: ProblemPayload;
     }) => adminProblemService.updateProblem(id, data),
 
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
-    },
+    onSuccess: () => invalidateProblemViews(queryClient),
   });
 };
 
@@ -59,9 +72,6 @@ export const useDeleteProblem = () => {
   return useMutation({
     mutationFn: (id: string) => adminProblemService.deleteProblem(id),
 
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
-      queryClient.invalidateQueries({ queryKey: ["platform-stats"] });
-    },
+    onSuccess: () => invalidateProblemViews(queryClient),
   });
 };

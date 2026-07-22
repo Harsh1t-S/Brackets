@@ -28,6 +28,9 @@ export function useToggleSolved(problemId: string) {
       queryClient.setQueryData(["problem-solved", problemId], result.solved);
       // Solved counts/lists live on the dashboard payload.
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      // The list renders a solved tick and supports a solved/unsolved filter,
+      // so it goes stale the moment this flips.
+      queryClient.invalidateQueries({ queryKey: ["problems"] });
     },
   });
 }

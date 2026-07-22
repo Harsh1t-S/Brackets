@@ -41,6 +41,9 @@ export function useVote(problemId: string) {
           ? { ...cached, likes: result.likes, dislikes: result.dislikes }
           : old;
       });
+      // The list sorts/displays likes, and the dashboard counts votes.
+      queryClient.invalidateQueries({ queryKey: ["problems"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
 }
