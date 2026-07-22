@@ -34,6 +34,7 @@ export default function ProblemDetailsPage() {
     min: 30,
     max: 72,
     direction: "horizontal",
+    storageKey: "bracket:split:statement",
   });
 
   // Collapse any open pill and reset the console when moving problems.

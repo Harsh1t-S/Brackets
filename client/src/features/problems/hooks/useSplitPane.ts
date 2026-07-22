@@ -10,14 +10,36 @@ export function useSplitPane({
   min = 20,
   max = 80,
   direction = "horizontal",
+  storageKey,
 }: {
   initial?: number;
   min?: number;
   max?: number;
   /** "horizontal" = side-by-side panes (drag left/right). */
   direction?: "horizontal" | "vertical";
+  /** Remember this split across problems and reloads when set. */
+  storageKey?: string;
 } = {}) {
-  const [size, setSize] = useState(initial);
+  const [size, setSize] = useState(() => {
+    if (!storageKey) return initial;
+    try {
+      const saved = Number(localStorage.getItem(storageKey));
+      // Guard against a stored value from an older min/max, or junk.
+      return saved >= min && saved <= max ? saved : initial;
+    } catch {
+      return initial;
+    }
+  });
+
+  // Persist the layout so it doesn't snap back on every problem you open.
+  useEffect(() => {
+    if (!storageKey) return;
+    try {
+      localStorage.setItem(storageKey, String(Math.round(size)));
+    } catch {
+      // Private mode / quota — the drag still works for this session.
+    }
+  }, [size, storageKey]);
   const [dragging, setDragging] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -78,9 +100,14 @@ export function useSplitPane({
       "aria-valuenow": Math.round(size),
       tabIndex: 0,
       onPointerDown: (e: React.PointerEvent) => {
+        // Primary button only — a right-click here used to begin a drag that
+        // then followed the cursor until the next click anywhere.
+        if (e.button !== 0) return;
         e.preventDefault();
         setDragging(true);
       },
+      /** Double-click the divider to restore the default split. */
+      onDoubleClick: () => setSize(initial),
       onKeyDown,
     },
   };

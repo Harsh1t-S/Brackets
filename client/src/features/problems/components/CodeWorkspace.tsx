@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { RotateCcw, Terminal, ChevronDown, Code2 } from "lucide-react";
 import type { Problem } from "../../../types/problem";
 import { useToast } from "../../../components/common/Toast";
 import { useSplitPane } from "../hooks/useSplitPane";
+import { clearDraft, initialCode, writeDraft } from "../lib/drafts";
 
 interface Props {
   problem: Problem;
@@ -47,9 +48,15 @@ export default function CodeWorkspace({
     [problem]
   );
 
-  const [language, setLanguage] = useState(languages[0] ?? "javascript");
-  const [code, setCode] = useState(problem.starterCode[languages[0]] ?? "");
+  const firstLang = languages[0] ?? "javascript";
+  const [language, setLanguage] = useState(firstLang);
+  const [code, setCode] = useState(() =>
+    initialCode(problem.id, firstLang, problem.starterCode[firstLang] ?? "")
+  );
   const [activeCase, setActiveCase] = useState(0);
+
+  const starter = problem.starterCode[language] ?? "";
+  const isDirty = code !== starter;
 
   // Editor takes ~68% of the column by default; drag to rebalance.
   const { size, dragging, containerRef, handleProps } = useSplitPane({
@@ -57,29 +64,71 @@ export default function CodeWorkspace({
     min: 25,
     max: 85,
     direction: "vertical",
+    storageKey: "bracket:split:workspace",
   });
 
   // Navigating to an already-cached problem doesn't unmount this component
   // (no loading state to tear it down), so the editor would keep showing the
-  // previous problem's starter code. Re-seed it whenever the problem changes.
+  // previous problem's code. Re-seed it whenever the problem changes, from
+  // this problem's saved draft when there is one.
   useEffect(() => {
     const first = Object.keys(problem.starterCode)[0] ?? "javascript";
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLanguage(first);
-     
-    setCode(problem.starterCode[first] ?? "");
-     
+
+    setCode(
+      initialCode(problem.id, first, problem.starterCode[first] ?? "")
+    );
+
     setActiveCase(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [problem.id]);
 
+  // Persist as you type, but not on every keystroke — a short idle window
+  // keeps localStorage writes off the typing path.
+  const saveTimer = useRef<number | undefined>(undefined);
+  useEffect(() => {
+    window.clearTimeout(saveTimer.current);
+    saveTimer.current = window.setTimeout(() => {
+      writeDraft(problem.id, language, code, starter);
+    }, 400);
+    return () => window.clearTimeout(saveTimer.current);
+  }, [code, language, problem.id, starter]);
+
+  // Flush the pending draft if the component goes away mid-edit (navigation,
+  // tab close) so the last few keystrokes aren't lost to the debounce.
+  useEffect(() => {
+    const flush = () => writeDraft(problem.id, language, code, starter);
+    window.addEventListener("pagehide", flush);
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      flush();
+    };
+  }, [problem.id, language, code, starter]);
+
+  /**
+   * Switching language keeps each buffer intact — the old one is saved and
+   * the new one restored. Previously this threw away whatever you had typed.
+   */
   function changeLanguage(lang: string) {
+    writeDraft(problem.id, language, code, starter);
     setLanguage(lang);
-    setCode(problem.starterCode[lang] ?? "");
+    setCode(
+      initialCode(problem.id, lang, problem.starterCode[lang] ?? "")
+    );
   }
 
   function reset() {
-    setCode(problem.starterCode[language] ?? "");
+    // The only destructive action left in the editor, so confirm it when
+    // there is actually something to lose.
+    if (
+      isDirty &&
+      !window.confirm("Discard your code and restore the starter template?")
+    ) {
+      return;
+    }
+    clearDraft(problem.id, language);
+    setCode(starter);
     toast("Editor reset to starter code", "info");
   }
 
@@ -150,19 +199,19 @@ export default function CodeWorkspace({
               spellCheck={false}
               autoCapitalize="off"
               autoCorrect="off"
+              // Soft-wrapping made a long line occupy two visual rows while
+              // the gutter still counted one, so the numbers drifted out of
+              // alignment for the rest of the file. Scroll instead of wrap.
+              wrap="off"
               aria-label="Code editor"
-              className="flex-1 resize-none overflow-hidden bg-transparent py-4 pr-4 font-mono text-sm leading-6 text-ink outline-none"
+              className="flex-1 resize-none overflow-y-hidden overflow-x-auto whitespace-pre bg-transparent py-4 pr-4 font-mono text-sm leading-6 text-ink outline-none"
               onKeyDown={(e) => {
                 if (e.key === "Tab") {
                   e.preventDefault();
-                  const el = e.currentTarget;
-                  const start = el.selectionStart;
-                  const end = el.selectionEnd;
-                  const next = code.slice(0, start) + "  " + code.slice(end);
-                  setCode(next);
-                  requestAnimationFrame(() => {
-                    el.selectionStart = el.selectionEnd = start + 2;
-                  });
+                  // insertText goes through the browser's own edit pipeline,
+                  // so Ctrl+Z still works. Rewriting value via setState
+                  // wiped the native undo stack on every Tab.
+                  document.execCommand("insertText", false, "  ");
                 }
               }}
             />
