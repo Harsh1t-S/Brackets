@@ -26,8 +26,8 @@ export default function Footer() {
                 <Link to="/dashboard" className="transition-colors hover:text-ink">
                   Dashboard
                 </Link>
-                <Link to="/bookmarks" className="transition-colors hover:text-ink">
-                  Bookmarks
+                <Link to="/lists" className="transition-colors hover:text-ink">
+                  My Lists
                 </Link>
               </>
             ) : (
