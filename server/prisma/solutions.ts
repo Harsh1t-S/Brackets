@@ -835,4 +835,377 @@ export const solutions: Record<string, Record<string, string>> = {
   return -1;
 }`,
   },
+
+  "trapping-rain-water": {
+    javascript: `function trap(height) {
+  let left = 0;
+  let right = height.length - 1;
+  let leftMax = 0;
+  let rightMax = 0;
+  let water = 0;
+
+  // Walk inward from both ends. The shorter side is always the binding
+  // constraint, so whichever wall is lower can be resolved immediately.
+  while (left < right) {
+    if (height[left] < height[right]) {
+      leftMax = Math.max(leftMax, height[left]);
+      water += leftMax - height[left];
+      left++;
+    } else {
+      rightMax = Math.max(rightMax, height[right]);
+      water += rightMax - height[right];
+      right--;
+    }
+  }
+
+  return water;
+}`,
+    python: `def trap(height):
+    left, right = 0, len(height) - 1
+    left_max = right_max = water = 0
+
+    while left < right:
+        if height[left] < height[right]:
+            left_max = max(left_max, height[left])
+            water += left_max - height[left]
+            left += 1
+        else:
+            right_max = max(right_max, height[right])
+            water += right_max - height[right]
+            right -= 1
+
+    return water`,
+  },
+
+  "merge-k-sorted-lists": {
+    javascript: `function mergeKLists(lists) {
+  if (!lists.length) return null;
+
+  // Pair up and merge repeatedly: O(n log k) instead of merging one at a
+  // time into an ever-growing accumulator.
+  const mergeTwo = (a, b) => {
+    const dummy = { val: 0, next: null };
+    let cur = dummy;
+    while (a && b) {
+      if (a.val <= b.val) { cur.next = a; a = a.next; }
+      else { cur.next = b; b = b.next; }
+      cur = cur.next;
+    }
+    cur.next = a ?? b;
+    return dummy.next;
+  };
+
+  let queue = lists.filter(Boolean);
+  if (!queue.length) return null;
+
+  while (queue.length > 1) {
+    const next = [];
+    for (let i = 0; i < queue.length; i += 2) {
+      next.push(i + 1 < queue.length ? mergeTwo(queue[i], queue[i + 1]) : queue[i]);
+    }
+    queue = next;
+  }
+
+  return queue[0];
+}`,
+    python: `import heapq
+
+
+def merge_k_lists(lists):
+    heap = []
+    for i, node in enumerate(lists):
+        if node:
+            # Index breaks ties so heapq never compares two nodes directly.
+            heapq.heappush(heap, (node.val, i, node))
+
+    dummy = tail = ListNode(0)
+    while heap:
+        _, i, node = heapq.heappop(heap)
+        tail.next = node
+        tail = node
+        if node.next:
+            heapq.heappush(heap, (node.next.val, i, node.next))
+
+    return dummy.next`,
+  },
+
+  "n-queens": {
+    javascript: `function solveNQueens(n) {
+  const results = [];
+  const queens = []; // queens[row] = column
+  const cols = new Set();
+  const diag = new Set();      // row - col
+  const antiDiag = new Set();  // row + col
+
+  const place = (row) => {
+    if (row === n) {
+      results.push(
+        queens.map((c) => ".".repeat(c) + "Q" + ".".repeat(n - c - 1))
+      );
+      return;
+    }
+
+    for (let col = 0; col < n; col++) {
+      if (cols.has(col) || diag.has(row - col) || antiDiag.has(row + col)) continue;
+
+      queens.push(col);
+      cols.add(col); diag.add(row - col); antiDiag.add(row + col);
+
+      place(row + 1);
+
+      queens.pop();
+      cols.delete(col); diag.delete(row - col); antiDiag.delete(row + col);
+    }
+  };
+
+  place(0);
+  return results;
+}`,
+    python: `def solve_n_queens(n):
+    results = []
+    queens = []
+    cols, diag, anti = set(), set(), set()
+
+    def place(row):
+        if row == n:
+            results.append(["." * c + "Q" + "." * (n - c - 1) for c in queens])
+            return
+
+        for col in range(n):
+            if col in cols or (row - col) in diag or (row + col) in anti:
+                continue
+
+            queens.append(col)
+            cols.add(col); diag.add(row - col); anti.add(row + col)
+
+            place(row + 1)
+
+            queens.pop()
+            cols.remove(col); diag.remove(row - col); anti.remove(row + col)
+
+    place(0)
+    return results`,
+  },
+
+  "word-ladder": {
+    javascript: `function ladderLength(beginWord, endWord, wordList) {
+  const words = new Set(wordList);
+  if (!words.has(endWord)) return 0;
+
+  let queue = [beginWord];
+  let steps = 1;
+  const alphabet = "abcdefghijklmnopqrstuvwxyz";
+
+  // Plain BFS over the implicit graph of one-letter edits.
+  while (queue.length) {
+    const next = [];
+
+    for (const word of queue) {
+      if (word === endWord) return steps;
+
+      for (let i = 0; i < word.length; i++) {
+        for (const ch of alphabet) {
+          const candidate = word.slice(0, i) + ch + word.slice(i + 1);
+          if (words.has(candidate)) {
+            words.delete(candidate); // visited
+            next.push(candidate);
+          }
+        }
+      }
+    }
+
+    queue = next;
+    steps++;
+  }
+
+  return 0;
+}`,
+    python: `from collections import deque
+
+
+def ladder_length(begin_word, end_word, word_list):
+    words = set(word_list)
+    if end_word not in words:
+        return 0
+
+    queue = deque([(begin_word, 1)])
+    alphabet = "abcdefghijklmnopqrstuvwxyz"
+
+    while queue:
+        word, steps = queue.popleft()
+        if word == end_word:
+            return steps
+
+        for i in range(len(word)):
+            for ch in alphabet:
+                candidate = word[:i] + ch + word[i + 1:]
+                if candidate in words:
+                    words.remove(candidate)
+                    queue.append((candidate, steps + 1))
+
+    return 0`,
+  },
+
+  "longest-valid-parentheses": {
+    javascript: `function longestValidParentheses(s) {
+  let longest = 0;
+  // Stack holds indices; the bottom is the last position that broke a run.
+  const stack = [-1];
+
+  for (let i = 0; i < s.length; i++) {
+    if (s[i] === "(") {
+      stack.push(i);
+    } else {
+      stack.pop();
+      if (stack.length === 0) {
+        stack.push(i); // new baseline
+      } else {
+        longest = Math.max(longest, i - stack[stack.length - 1]);
+      }
+    }
+  }
+
+  return longest;
+}`,
+    python: `def longest_valid_parentheses(s):
+    longest = 0
+    stack = [-1]
+
+    for i, ch in enumerate(s):
+        if ch == "(":
+            stack.append(i)
+        else:
+            stack.pop()
+            if not stack:
+                stack.append(i)
+            else:
+                longest = max(longest, i - stack[-1])
+
+    return longest`,
+  },
+
+  "edit-distance": {
+    javascript: `function minDistance(word1, word2) {
+  const m = word1.length;
+  const n = word2.length;
+
+  // Only the previous row is ever needed, so keep two rows instead of a grid.
+  let prev = Array.from({ length: n + 1 }, (_, j) => j);
+
+  for (let i = 1; i <= m; i++) {
+    const curr = [i];
+    for (let j = 1; j <= n; j++) {
+      curr[j] =
+        word1[i - 1] === word2[j - 1]
+          ? prev[j - 1]
+          : 1 + Math.min(prev[j - 1], prev[j], curr[j - 1]);
+    }
+    prev = curr;
+  }
+
+  return prev[n];
+}`,
+    python: `def min_distance(word1, word2):
+    m, n = len(word1), len(word2)
+    prev = list(range(n + 1))
+
+    for i in range(1, m + 1):
+        curr = [i] + [0] * n
+        for j in range(1, n + 1):
+            if word1[i - 1] == word2[j - 1]:
+                curr[j] = prev[j - 1]
+            else:
+                curr[j] = 1 + min(prev[j - 1], prev[j], curr[j - 1])
+        prev = curr
+
+    return prev[n]`,
+  },
+
+  "sliding-window-maximum": {
+    javascript: `function maxSlidingWindow(nums, k) {
+  const result = [];
+  const deque = []; // indices, values decreasing front -> back
+
+  for (let i = 0; i < nums.length; i++) {
+    // Drop indices that have fallen out of the window.
+    if (deque.length && deque[0] <= i - k) deque.shift();
+
+    // Anything smaller than the incoming value can never be a maximum again.
+    while (deque.length && nums[deque[deque.length - 1]] <= nums[i]) deque.pop();
+
+    deque.push(i);
+    if (i >= k - 1) result.push(nums[deque[0]]);
+  }
+
+  return result;
+}`,
+    python: `from collections import deque
+
+
+def max_sliding_window(nums, k):
+    result = []
+    window = deque()  # indices, values decreasing
+
+    for i, value in enumerate(nums):
+        if window and window[0] <= i - k:
+            window.popleft()
+
+        while window and nums[window[-1]] <= value:
+            window.pop()
+
+        window.append(i)
+        if i >= k - 1:
+            result.append(nums[window[0]])
+
+    return result`,
+  },
+
+  "regular-expression-matching": {
+    javascript: `function isMatch(s, p) {
+  const m = s.length;
+  const n = p.length;
+  // dp[i][j] = does s[0..i) match p[0..j)
+  const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(false));
+  dp[0][0] = true;
+
+  // An empty string can still match patterns like a*b*c*.
+  for (let j = 1; j <= n; j++) {
+    if (p[j - 1] === "*") dp[0][j] = dp[0][j - 2];
+  }
+
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (p[j - 1] === "*") {
+        const zero = dp[i][j - 2];
+        const more =
+          (p[j - 2] === "." || p[j - 2] === s[i - 1]) && dp[i - 1][j];
+        dp[i][j] = zero || more;
+      } else if (p[j - 1] === "." || p[j - 1] === s[i - 1]) {
+        dp[i][j] = dp[i - 1][j - 1];
+      }
+    }
+  }
+
+  return dp[m][n];
+}`,
+    python: `def is_match(s, p):
+    m, n = len(s), len(p)
+    dp = [[False] * (n + 1) for _ in range(m + 1)]
+    dp[0][0] = True
+
+    for j in range(1, n + 1):
+        if p[j - 1] == "*":
+            dp[0][j] = dp[0][j - 2]
+
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            if p[j - 1] == "*":
+                zero = dp[i][j - 2]
+                more = p[j - 2] in (".", s[i - 1]) and dp[i - 1][j]
+                dp[i][j] = zero or more
+            elif p[j - 1] in (".", s[i - 1]):
+                dp[i][j] = dp[i - 1][j - 1]
+
+    return dp[m][n]`,
+  },
 };

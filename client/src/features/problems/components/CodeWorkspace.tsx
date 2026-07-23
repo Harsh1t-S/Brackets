@@ -11,6 +11,7 @@ import type { Problem } from "../../../types/problem";
 import { useToast } from "../../../components/common/Toast";
 import { useSplitPane } from "../hooks/useSplitPane";
 import { clearDraft, initialCode, writeDraft } from "../lib/drafts";
+import Modal from "../../../components/common/Modal";
 
 // CodeMirror (highlighting, gutters, language grammars) is heavy and only the
 // solve view needs it, so it loads as its own chunk when this panel mounts.
@@ -102,10 +103,14 @@ export default function CodeWorkspace({
   // Persist as you type, but not on every keystroke — a short idle window
   // keeps localStorage writes off the typing path.
   const saveTimer = useRef<number | undefined>(undefined);
+  // Drafts are invisible otherwise — nobody trusts an editor with unsaved
+  // work unless it says so.
+  const [saved, setSaved] = useState(false);
   useEffect(() => {
     window.clearTimeout(saveTimer.current);
     saveTimer.current = window.setTimeout(() => {
       writeDraft(problem.id, language, code, starter);
+      setSaved(code !== starter);
     }, 400);
     return () => window.clearTimeout(saveTimer.current);
   }, [code, language, problem.id, starter]);
@@ -145,17 +150,24 @@ export default function CodeWorkspace({
     );
   }
 
+  // The only destructive action left in the editor, so confirm it when there
+  // is actually something to lose. Uses the app's own dialog rather than a
+  // native confirm() — it was the last browser-chrome popup in the product.
+  const [confirmingReset, setConfirmingReset] = useState(false);
+
   function reset() {
-    // The only destructive action left in the editor, so confirm it when
-    // there is actually something to lose.
-    if (
-      isDirty &&
-      !window.confirm("Discard your code and restore the starter template?")
-    ) {
+    if (isDirty) {
+      setConfirmingReset(true);
       return;
     }
+    applyReset();
+  }
+
+  function applyReset() {
     clearDraft(problem.id, language);
     setCode(starter);
+    setSaved(false);
+    setConfirmingReset(false);
     toast("Editor reset to starter code", "info");
   }
 
@@ -183,6 +195,15 @@ export default function CodeWorkspace({
             <span className="font-mono text-xs font-normal text-ink-subtle">
               solution.{langExt[language] ?? "txt"}
             </span>
+            {saved && isDirty && (
+              <span
+                title="Your code is saved in this browser"
+                className="inline-flex items-center gap-1 text-xs font-normal text-ink-subtle"
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-easy" />
+                Draft saved
+              </span>
+            )}
           </span>
 
           <div className="flex items-center gap-1.5">
@@ -335,6 +356,40 @@ export default function CodeWorkspace({
           )}
         </div>
       </section>
+
+      <Modal
+        open={confirmingReset}
+        onClose={() => setConfirmingReset(false)}
+        labelledBy="reset-editor-title"
+      >
+        <>
+          <h2 id="reset-editor-title" className="text-lg font-bold text-ink">
+            Reset the editor?
+          </h2>
+          <p className="mt-3 text-ink-muted">
+            This discards the code you've written for{" "}
+            <span className="font-semibold text-ink">
+              {langLabels[language] ?? language}
+            </span>{" "}
+            and restores the starter template. It can't be undone.
+          </p>
+          <div className="mt-6 flex justify-end gap-3">
+            <button
+              onClick={() => setConfirmingReset(false)}
+              className="btn btn-secondary px-5 py-2.5"
+            >
+              Keep my code
+            </button>
+            <button
+              onClick={applyReset}
+              className="btn px-5 py-2.5 text-white"
+              style={{ backgroundColor: "var(--color-hard)" }}
+            >
+              Reset
+            </button>
+          </div>
+        </>
+      </Modal>
     </div>
   );
 }

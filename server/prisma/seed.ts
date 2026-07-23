@@ -1672,6 +1672,278 @@ const problems: Array<{
       { input: "n = 10", output: "false", isHidden: true },
     ],
   },
+
+  // ── Hard ───────────────────────────────────────────────────────────────
+  // The set was 34 Easy / 30 Medium / 2 Hard, so the Hard filter returned
+  // almost nothing. These are the canonical hard interview questions.
+  {
+    title: "Trapping Rain Water",
+    slug: "trapping-rain-water",
+    difficulty: Difficulty.HARD,
+    description:
+      "Given <code>n</code> non-negative integers representing an elevation map where the width of each bar is <code>1</code>, compute how much water it can trap after raining.",
+    constraints:
+      "n == height.length\n1 <= n <= 2 * 10^4\n0 <= height[i] <= 10^5",
+    acceptance: 61.2,
+    likes: 3120,
+    dislikes: 44,
+    examples: [
+      {
+        input: "height = [0,1,0,2,1,0,1,3,2,1,2,1]",
+        output: "6",
+        explanation:
+          "The elevation map traps 6 units of rain water between the bars.",
+      },
+      { input: "height = [4,2,0,3,2,5]", output: "9" },
+    ],
+    starterCode: {
+      javascript: "function trap(height) {\n\n}",
+      python: "def trap(height):\n    pass",
+      java: "class Solution {\n  public int trap(int[] height) {\n\n  }\n}",
+      cpp: "class Solution {\npublic:\n  int trap(vector<int>& height) {\n\n  }\n};",
+    },
+    solutionCode: {},
+    tags: ["Array", "Two Pointers", "Dynamic Programming", "Stack"],
+    companies: ["Amazon", "Google", "Goldman Sachs", "Apple"],
+    testCases: [
+      { input: "height = [0,1,0,2,1,0,1,3,2,1,2,1]", output: "6" },
+      { input: "height = [4,2,0,3,2,5]", output: "9" },
+      { input: "height = [1,1,1]", output: "0", isHidden: true },
+      { input: "height = [5]", output: "0", isHidden: true },
+    ],
+  },
+  {
+    title: "N-Queens",
+    slug: "n-queens",
+    difficulty: Difficulty.HARD,
+    description:
+      "The n-queens puzzle is the problem of placing <code>n</code> queens on an <code>n x n</code> chessboard so that no two queens attack each other. Given an integer <code>n</code>, return all distinct solutions. Each solution is a board where <code>'Q'</code> marks a queen and <code>'.'</code> an empty square.",
+    constraints: "1 <= n <= 9",
+    acceptance: 68.4,
+    likes: 1960,
+    dislikes: 58,
+    examples: [
+      {
+        input: "n = 4",
+        output: '[[".Q..","...Q","Q...","..Q."],["..Q.","Q...","...Q",".Q.."]]',
+        explanation: "There are two distinct solutions to the 4-queens puzzle.",
+      },
+      { input: "n = 1", output: '[["Q"]]' },
+    ],
+    starterCode: {
+      javascript: "function solveNQueens(n) {\n\n}",
+      python: "def solve_n_queens(n):\n    pass",
+      java: "class Solution {\n  public List<List<String>> solveNQueens(int n) {\n\n  }\n}",
+      cpp: "class Solution {\npublic:\n  vector<vector<string>> solveNQueens(int n) {\n\n  }\n};",
+    },
+    solutionCode: {},
+    tags: ["Backtracking", "Recursion", "Array"],
+    companies: ["Amazon", "Google", "Adobe"],
+    testCases: [
+      { input: "n = 1", output: '[["Q"]]' },
+      { input: "n = 2", output: "[]" },
+      { input: "n = 3", output: "[]", isHidden: true },
+    ],
+  },
+  {
+    title: "Word Ladder",
+    slug: "word-ladder",
+    difficulty: Difficulty.HARD,
+    description:
+      "Given two words <code>beginWord</code> and <code>endWord</code>, and a dictionary <code>wordList</code>, return the number of words in the shortest transformation sequence from <code>beginWord</code> to <code>endWord</code>, changing exactly one letter at a time and using only words in the list. Return <code>0</code> if no such sequence exists.",
+    constraints:
+      "1 <= beginWord.length <= 10\nendWord.length == beginWord.length\n1 <= wordList.length <= 5000\nAll words consist of lowercase English letters.",
+    acceptance: 41.7,
+    likes: 1620,
+    dislikes: 210,
+    examples: [
+      {
+        input:
+          'beginWord = "hit", endWord = "cog", wordList = ["hot","dot","dog","lot","log","cog"]',
+        output: "5",
+        explanation:
+          'The shortest transformation is "hit" -> "hot" -> "dot" -> "dog" -> "cog", which is 5 words.',
+      },
+      {
+        input:
+          'beginWord = "hit", endWord = "cog", wordList = ["hot","dot","dog","lot","log"]',
+        output: "0",
+        explanation: '"cog" is not in the word list, so no sequence exists.',
+      },
+    ],
+    starterCode: {
+      javascript: "function ladderLength(beginWord, endWord, wordList) {\n\n}",
+      python: "def ladder_length(begin_word, end_word, word_list):\n    pass",
+      java: "class Solution {\n  public int ladderLength(String beginWord, String endWord, List<String> wordList) {\n\n  }\n}",
+      cpp: "class Solution {\npublic:\n  int ladderLength(string beginWord, string endWord, vector<string>& wordList) {\n\n  }\n};",
+    },
+    solutionCode: {},
+    tags: ["Breadth-First Search", "Hash Set", "String", "Graph"],
+    companies: ["Amazon", "Google", "Meta", "LinkedIn"],
+    testCases: [
+      {
+        input:
+          'beginWord = "hit", endWord = "cog", wordList = ["hot","dot","dog","lot","log","cog"]',
+        output: "5",
+      },
+      {
+        input:
+          'beginWord = "hit", endWord = "cog", wordList = ["hot","dot","dog","lot","log"]',
+        output: "0",
+      },
+      {
+        input: 'beginWord = "a", endWord = "c", wordList = ["a","b","c"]',
+        output: "2",
+        isHidden: true,
+      },
+    ],
+  },
+  {
+    title: "Longest Valid Parentheses",
+    slug: "longest-valid-parentheses",
+    difficulty: Difficulty.HARD,
+    description:
+      "Given a string containing just the characters <code>'('</code> and <code>')'</code>, return the length of the longest valid (well-formed) parentheses substring.",
+    constraints: "0 <= s.length <= 3 * 10^4\ns[i] is '(' or ')'.",
+    acceptance: 35.9,
+    likes: 1480,
+    dislikes: 62,
+    examples: [
+      {
+        input: 's = "(()"',
+        output: "2",
+        explanation: 'The longest valid substring is "()".',
+      },
+      {
+        input: 's = ")()())"',
+        output: "4",
+        explanation: 'The longest valid substring is "()()".',
+      },
+    ],
+    starterCode: {
+      javascript: "function longestValidParentheses(s) {\n\n}",
+      python: "def longest_valid_parentheses(s):\n    pass",
+      java: "class Solution {\n  public int longestValidParentheses(String s) {\n\n  }\n}",
+      cpp: "class Solution {\npublic:\n  int longestValidParentheses(string s) {\n\n  }\n};",
+    },
+    solutionCode: {},
+    tags: ["String", "Stack", "Dynamic Programming"],
+    companies: ["Amazon", "Google", "Microsoft"],
+    testCases: [
+      { input: 's = "(()"', output: "2" },
+      { input: 's = ")()())"', output: "4" },
+      { input: 's = ""', output: "0", isHidden: true },
+      { input: 's = "()(()"', output: "2", isHidden: true },
+    ],
+  },
+  {
+    title: "Edit Distance",
+    slug: "edit-distance",
+    difficulty: Difficulty.HARD,
+    description:
+      "Given two strings <code>word1</code> and <code>word2</code>, return the minimum number of operations required to convert <code>word1</code> to <code>word2</code>. You may insert, delete, or replace a character.",
+    constraints:
+      "0 <= word1.length, word2.length <= 500\nBoth words consist of lowercase English letters.",
+    acceptance: 57.3,
+    likes: 2210,
+    dislikes: 38,
+    examples: [
+      {
+        input: 'word1 = "horse", word2 = "ros"',
+        output: "3",
+        explanation: "horse -> rorse -> rose -> ros.",
+      },
+      { input: 'word1 = "intention", word2 = "execution"', output: "5" },
+    ],
+    starterCode: {
+      javascript: "function minDistance(word1, word2) {\n\n}",
+      python: "def min_distance(word1, word2):\n    pass",
+      java: "class Solution {\n  public int minDistance(String word1, String word2) {\n\n  }\n}",
+      cpp: "class Solution {\npublic:\n  int minDistance(string word1, string word2) {\n\n  }\n};",
+    },
+    solutionCode: {},
+    tags: ["String", "Dynamic Programming"],
+    companies: ["Amazon", "Google", "Microsoft", "Apple"],
+    testCases: [
+      { input: 'word1 = "horse", word2 = "ros"', output: "3" },
+      { input: 'word1 = "intention", word2 = "execution"', output: "5" },
+      { input: 'word1 = "", word2 = "abc"', output: "3", isHidden: true },
+    ],
+  },
+  {
+    title: "Sliding Window Maximum",
+    slug: "sliding-window-maximum",
+    difficulty: Difficulty.HARD,
+    description:
+      "You are given an array of integers <code>nums</code> and a sliding window of size <code>k</code> moving from the left to the right of the array. Return an array of the maximum value in each window position.",
+    constraints:
+      "1 <= nums.length <= 10^5\n-10^4 <= nums[i] <= 10^4\n1 <= k <= nums.length",
+    acceptance: 47.1,
+    likes: 1870,
+    dislikes: 84,
+    examples: [
+      {
+        input: "nums = [1,3,-1,-3,5,3,6,7], k = 3",
+        output: "[3,3,5,5,6,7]",
+        explanation:
+          "Each window of size 3 contributes its maximum, left to right.",
+      },
+      { input: "nums = [1], k = 1", output: "[1]" },
+    ],
+    starterCode: {
+      javascript: "function maxSlidingWindow(nums, k) {\n\n}",
+      python: "def max_sliding_window(nums, k):\n    pass",
+      java: "class Solution {\n  public int[] maxSlidingWindow(int[] nums, int k) {\n\n  }\n}",
+      cpp: "class Solution {\npublic:\n  vector<int> maxSlidingWindow(vector<int>& nums, int k) {\n\n  }\n};",
+    },
+    solutionCode: {},
+    tags: ["Array", "Sliding Window", "Deque", "Heap"],
+    companies: ["Amazon", "Google", "Meta", "Bloomberg"],
+    testCases: [
+      { input: "nums = [1,3,-1,-3,5,3,6,7], k = 3", output: "[3,3,5,5,6,7]" },
+      { input: "nums = [1], k = 1", output: "[1]" },
+      { input: "nums = [9,8,7], k = 3", output: "[9]", isHidden: true },
+    ],
+  },
+  {
+    title: "Regular Expression Matching",
+    slug: "regular-expression-matching",
+    difficulty: Difficulty.HARD,
+    description:
+      "Given an input string <code>s</code> and a pattern <code>p</code>, implement regular expression matching with support for <code>'.'</code> and <code>'*'</code>, where <code>'.'</code> matches any single character and <code>'*'</code> matches zero or more of the preceding element. The match must cover the entire input string.",
+    constraints:
+      "1 <= s.length <= 20\n1 <= p.length <= 20\ns contains only lowercase English letters.\np contains only lowercase English letters, '.' and '*'.",
+    acceptance: 28.4,
+    likes: 1340,
+    dislikes: 320,
+    examples: [
+      {
+        input: 's = "aa", p = "a"',
+        output: "false",
+        explanation: '"a" does not match the entire string "aa".',
+      },
+      {
+        input: 's = "aa", p = "a*"',
+        output: "true",
+        explanation: "'*' means zero or more of the preceding element 'a'.",
+      },
+    ],
+    starterCode: {
+      javascript: "function isMatch(s, p) {\n\n}",
+      python: "def is_match(s, p):\n    pass",
+      java: "class Solution {\n  public boolean isMatch(String s, String p) {\n\n  }\n}",
+      cpp: "class Solution {\npublic:\n  bool isMatch(string s, string p) {\n\n  }\n};",
+    },
+    solutionCode: {},
+    tags: ["String", "Dynamic Programming", "Recursion"],
+    companies: ["Google", "Meta", "Amazon", "Uber"],
+    testCases: [
+      { input: 's = "aa", p = "a"', output: "false" },
+      { input: 's = "aa", p = "a*"', output: "true" },
+      { input: 's = "ab", p = ".*"', output: "true", isHidden: true },
+      { input: 's = "mississippi", p = "mis*is*p*."', output: "false", isHidden: true },
+    ],
+  },
 ];
 
 async function main() {
@@ -1738,13 +2010,26 @@ async function main() {
       select: { id: true },
     });
 
+    // On an existing problem, leave the engagement counters alone. They drift
+    // from the seed the moment a real person votes, and re-seeding used to
+    // stamp the hard-coded numbers back over them — the ProblemVote rows
+    // survived (as advertised) but the totals shown next to them did not.
+    const { likes, dislikes, acceptance, ...content } = p;
+
     const problem = existing
       ? await prisma.problem.update({
           where: { slug: p.slug },
-          data: { ...p, createdById: admin.id },
+          data: { ...content, createdById: admin.id },
         })
       : await prisma.problem.create({
-          data: { ...p, number: ++nextNumber, createdById: admin.id },
+          data: {
+            ...content,
+            likes,
+            dislikes,
+            acceptance,
+            number: ++nextNumber,
+            createdById: admin.id,
+          },
         });
 
     // Refresh only this problem's test cases (not user data).
