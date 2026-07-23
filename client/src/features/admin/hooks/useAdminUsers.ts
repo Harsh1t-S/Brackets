@@ -3,11 +3,11 @@ import { getUsers, setUserRole, deleteUser } from "../services/adminUser.service
 
 const USERS_KEY = "admin-users";
 
-export function useAdminUsers(search?: string) {
+export function useAdminUsers(search?: string, page = 1) {
   const term = search?.trim() ?? "";
   return useQuery({
-    queryKey: [USERS_KEY, term],
-    queryFn: () => getUsers(term || undefined),
+    queryKey: [USERS_KEY, term, page],
+    queryFn: () => getUsers(term || undefined, page),
   });
 }
 

@@ -14,10 +14,18 @@ const userSelect = {
 } satisfies Prisma.UserSelect;
 
 /**
- * All users, newest first. An optional `search` narrows by name or email
- * (case-insensitive substring) so the admin list stays usable as it grows.
+ * A page of users, newest first. An optional `search` narrows by name or
+ * email (case-insensitive substring) so the admin list stays usable as it
+ * grows.
+ *
+ * Paginated because this returns every user's email address in one response —
+ * fine at six users, a slow and needlessly revealing payload at six thousand.
  */
-export const getAllUsers = async (search?: string) => {
+export const getAllUsers = async ({
+  search,
+  page = 1,
+  limit = 25,
+}: { search?: string; page?: number; limit?: number } = {}) => {
   const term = search?.trim();
   const where: Prisma.UserWhereInput = term
     ? {
@@ -28,11 +36,18 @@ export const getAllUsers = async (search?: string) => {
       }
     : {};
 
-  return prisma.user.findMany({
-    where,
-    orderBy: { createdAt: "desc" },
-    select: userSelect,
-  });
+  const [users, total] = await Promise.all([
+    prisma.user.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      select: userSelect,
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+    prisma.user.count({ where }),
+  ]);
+
+  return { users, total, page, totalPages: Math.ceil(total / limit) };
 };
 
 /**

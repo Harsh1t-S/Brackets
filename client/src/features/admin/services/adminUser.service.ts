@@ -12,9 +12,19 @@ export interface AdminUser {
   _count: { bookmarks: number };
 }
 
-export async function getUsers(search?: string): Promise<AdminUser[]> {
+export interface AdminUsersResponse {
+  users: AdminUser[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
+export async function getUsers(
+  search?: string,
+  page = 1
+): Promise<AdminUsersResponse> {
   const { data } = await api.get("/admin/users", {
-    params: search ? { search } : undefined,
+    params: { ...(search ? { search } : {}), page },
   });
   return data.data;
 }

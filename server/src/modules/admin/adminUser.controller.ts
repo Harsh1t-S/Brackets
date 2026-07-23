@@ -3,11 +3,19 @@ import { getAllUsers, setUserRole, deleteUser } from "./adminUser.service";
 import { updateRoleSchema } from "./adminUser.validation";
 import { asyncHandler } from "../../utils/asyncHandler";
 import { ApiError } from "../../utils/ApiError";
+import { toLimit, toPage } from "../problem/problem.filters";
 
 export const list = asyncHandler(async (req: Request, res: Response) => {
-  const search = typeof req.query.search === "string" ? req.query.search : undefined;
-  const users = await getAllUsers(search);
-  res.status(200).json({ success: true, data: users });
+  const search =
+    typeof req.query.search === "string" ? req.query.search : undefined;
+
+  const data = await getAllUsers({
+    search,
+    page: toPage(req.query.page),
+    limit: toLimit(req.query.limit, 100),
+  });
+
+  res.status(200).json({ success: true, data });
 });
 
 export const updateRole = asyncHandler(

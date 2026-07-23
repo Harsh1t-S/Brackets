@@ -8,6 +8,7 @@ import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
 import { useDebounce } from "../../../hooks/useDebounce";
 import SearchBar from "../components/SearchBar";
 import DeleteUserModal from "../components/DeleteUserModal";
+import Pagination from "../../../components/common/Pagination";
 import type { AdminUser } from "../services/adminUser.service";
 
 const dateFmt: Intl.DateTimeFormatOptions = {
@@ -19,8 +20,17 @@ const dateFmt: Intl.DateTimeFormatOptions = {
 export default function UsersManagement() {
   const { user: currentUser } = useAuth();
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const debouncedSearch = useDebounce(search);
-  const { data: users = [], isLoading, isError } = useAdminUsers(debouncedSearch);
+  const { data, isLoading, isError } = useAdminUsers(debouncedSearch, page);
+  const users = data?.users ?? [];
+
+  // A narrowed search can leave you past the last page of the new result set.
+  const [syncedTerm, setSyncedTerm] = useState(debouncedSearch);
+  if (debouncedSearch !== syncedTerm) {
+    setSyncedTerm(debouncedSearch);
+    setPage(1);
+  }
   const setRole = useSetUserRole();
   const [deletingUser, setDeletingUser] = useState<AdminUser | null>(null);
   const toast = useToast();
@@ -190,6 +200,16 @@ export default function UsersManagement() {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {data && data.totalPages > 1 && (
+          <div className="mt-6">
+            <Pagination
+              page={data.page}
+              totalPages={data.totalPages}
+              onChange={setPage}
+            />
           </div>
         )}
       </div>
