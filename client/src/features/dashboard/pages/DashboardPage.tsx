@@ -37,7 +37,7 @@ export default function DashboardPage() {
   const stats = [
     { label: "Solved", value: data.solvedCount ?? 0, icon: CheckCircle2 },
     { label: "Total Problems", value: data.totalProblems, icon: ListChecks },
-    { label: "Bookmarks", value: data.bookmarks, icon: Bookmark },
+    { label: "Saved", value: data.bookmarks, icon: Bookmark },
     { label: "Votes Cast", value: data.votesCast, icon: ThumbsUp },
   ];
 
@@ -160,9 +160,9 @@ export default function DashboardPage() {
       {/* Recent bookmarks */}
       <div className="card mt-8 p-6">
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-ink">Recent bookmarks</h2>
+          <h2 className="text-lg font-semibold text-ink">Recently saved</h2>
           <Link
-            to="/bookmarks"
+            to="/lists"
             className="inline-flex items-center gap-1 text-sm font-medium text-brand transition-opacity hover:opacity-80"
           >
             View all <ChevronRight size={15} />
@@ -170,7 +170,7 @@ export default function DashboardPage() {
         </div>
 
         {data.recentBookmarks.length === 0 ? (
-          <p className="py-8 text-center text-ink-subtle">No bookmarks yet.</p>
+          <p className="py-8 text-center text-ink-subtle">Nothing saved yet.</p>
         ) : (
           <div className="space-y-2">
             {data.recentBookmarks.map((bookmark) => (

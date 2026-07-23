@@ -13,7 +13,8 @@ import LoginPage from "../../features/auth/pages/LoginPage";
 import RegisterPage from "../../features/auth/pages/RegisterPage";
 import DashboardPage from "../../features/dashboard/pages/DashboardPage";
 import ProfilePage from "../../features/profile/pages/ProfilePage";
-import BookmarksPage from "../../features/bookmarks/pages/BookmarksPage";
+import ListsPage from "../../features/lists/pages/ListsPage";
+import ListDetailPage from "../../features/lists/pages/ListDetailPage";
 
 // The admin panel (incl. the Quill editor) is code-split out of the main
 // bundle — regular visitors never download it.
@@ -56,11 +57,15 @@ export default function AppRouter() {
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/problems" element={<ProblemsPage />} />
+        <Route path="/lists/:slug" element={<ListDetailPage />} />
         <Route path="/:key" element={<ProblemShortcut />} />
 
         <Route element={<RequireAuth />}>
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/bookmarks" element={<BookmarksPage />} />
+          <Route path="/lists" element={<ListsPage />} />
+          {/* Bookmarks became the built-in Favourites list; keep old
+              links working rather than 404ing them. */}
+          <Route path="/bookmarks" element={<Navigate to="/lists" replace />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
 

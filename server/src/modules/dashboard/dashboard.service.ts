@@ -25,8 +25,10 @@ class DashboardService {
     ] = await Promise.all([
         prisma.problem.count(),
 
-        prisma.bookmark.count({
-          where: { userId },
+        // Saved problems now live in lists, not the frozen Bookmark table —
+        // counting bookmarks here would ignore everything saved since.
+        prisma.problemListItem.count({
+          where: { list: { userId } },
         }),
 
         prisma.problemVote.count({
@@ -37,8 +39,8 @@ class DashboardService {
           where: { userId },
         }),
 
-        prisma.bookmark.findMany({
-          where: { userId },
+        prisma.problemListItem.findMany({
+          where: { list: { userId } },
           include: { problem: problemSummary },
           orderBy: { createdAt: "desc" },
           take: 5,

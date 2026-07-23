@@ -18,7 +18,7 @@ import {
 } from "../../../lib/avatar";
 import { fileToAvatarDataUri } from "../../../lib/image";
 import { updateMe } from "../../auth/services/auth.service";
-import { useBookmarks } from "../../bookmarks/hooks/useBookmarks";
+import { useList, useMyLists } from "../../lists/hooks/useLists";
 import { useDashboard } from "../../dashboard/hooks/useDashboard";
 import Pagination from "../../../components/common/Pagination";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
@@ -32,7 +32,17 @@ const PAGE_SIZE = 5;
 export default function ProfilePage() {
   useDocumentTitle("Profile");
   const { user, refresh } = useAuth();
-  const { data: bookmarks = [] } = useBookmarks();
+  // Saved problems live in the built-in Favourites list now; reading the old
+  // Bookmark table here would miss everything saved since lists shipped.
+  const { data: lists = [] } = useMyLists();
+  const favourite = lists.find((l) => l.isDefault);
+  const { data: favouriteList } = useList(favourite?.slug);
+  // Stable identity: the `?? []` fallback would otherwise be a fresh array on
+  // every render and re-run the pagination useMemo below each time.
+  const bookmarks = useMemo(
+    () => favouriteList?.items ?? [],
+    [favouriteList?.items]
+  );
   const { data: dashboard } = useDashboard();
   const toast = useToast();
 
@@ -253,7 +263,7 @@ export default function ProfilePage() {
           </div>
           <div className="rounded-xl border border-line bg-surface-2 p-4">
             <p className="flex items-center gap-2 text-xs text-ink-subtle">
-              <Bookmark size={14} /> Bookmarked
+              <Bookmark size={14} /> Saved
             </p>
             <p className="mt-1.5 font-medium text-ink">
               {plural(bookmarks.length, "problem")}
@@ -297,7 +307,7 @@ export default function ProfilePage() {
       <div className="mt-10">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-bold tracking-tight text-ink">
-            Bookmarked problems
+            Saved problems
           </h2>
           <span className="rounded-full bg-surface-2 px-3 py-1 text-sm font-medium text-ink-muted">
             {bookmarks.length}
@@ -310,7 +320,7 @@ export default function ProfilePage() {
               <Bookmark size={22} />
             </span>
             <p className="mt-4 text-ink-muted">
-              You haven't bookmarked any problems yet.
+              You haven't saved any problems yet.
             </p>
             <Link to="/problems" className="btn btn-primary mt-5 px-5 py-2.5">
               Browse problems
@@ -322,21 +332,21 @@ export default function ProfilePage() {
               {visible.map((b) => (
                 <Link
                   key={b.id}
-                  to={`/problems/${b.problem.number}/${b.problem.slug}`}
+                  to={`/problems/${b.number}/${b.slug}`}
                   className="card group flex items-center justify-between p-4 transition-colors hover:border-line-strong"
                 >
                   <div>
                     <h3 className="font-semibold text-ink transition-colors group-hover:text-brand">
                       <span className="mr-2 text-ink-subtle">
-                        #{b.problem.number}
+                        #{b.number}
                       </span>
-                      {b.problem.title}
+                      {b.title}
                     </h3>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
-                      <span className={difficultyBadgeClass(b.problem.difficulty)}>
-                        {b.problem.difficulty}
+                      <span className={difficultyBadgeClass(b.difficulty)}>
+                        {b.difficulty}
                       </span>
-                      {b.problem.tags.slice(0, 3).map((t) => (
+                      {b.tags.slice(0, 3).map((t) => (
                         <span
                           key={t}
                           className="rounded-md bg-surface-2 px-2 py-0.5 text-xs font-medium text-ink-muted"

@@ -43,7 +43,7 @@ export default function Navbar() {
   // avatar, so personal pages read as part of the account area.
   const links = [
     { to: "/problems", label: "Problems" },
-    ...(user ? [{ to: "/bookmarks", label: "Bookmarks" }] : []),
+    ...(user ? [{ to: "/lists", label: "My Lists" }] : []),
   ];
 
   const accountLinks = user ? [{ to: "/dashboard", label: "Dashboard" }] : [];

@@ -2,18 +2,13 @@ import { useNavigate } from "react-router-dom";
 import {
   ThumbsUp,
   ThumbsDown,
-  Bookmark,
-  BookmarkCheck,
   CheckCircle2,
 } from "lucide-react";
 import type { Problem } from "../../../types/problem";
 import { useAuth } from "../../auth/context/AuthContext";
 import { useMyVote, useVote } from "../hooks/useVote";
 import { useMySolved, useToggleSolved } from "../hooks/useSolved";
-import {
-  useBookmarks,
-  useToggleBookmark,
-} from "../../bookmarks/hooks/useBookmarks";
+import SaveToListButton from "../../lists/components/SaveToListButton";
 import { useToast } from "../../../components/common/Toast";
 
 interface Props {
@@ -31,11 +26,6 @@ export default function ProblemActions({ problem }: Props) {
 
   const { data: myVote = 0 } = useMyVote(problem.id, !!user);
   const voteMutation = useVote(problem.id);
-
-  const { data: bookmarks = [] } = useBookmarks();
-  const toggleBookmark = useToggleBookmark();
-  const bookmarked =
-    !!user && bookmarks.some((b) => b.problem.id === problem.id);
 
   const toast = useToast();
   const { data: solved = false } = useMySolved(problem.id, !!user);
@@ -81,20 +71,11 @@ export default function ProblemActions({ problem }: Props) {
         {solved ? "Solved" : "Mark solved"}
       </button>
 
-      <button
-        onClick={guard(() => toggleBookmark.mutate(problem.id))}
-        disabled={toggleBookmark.isPending}
-        aria-pressed={bookmarked}
-        title={user ? undefined : "Sign in to bookmark"}
-        className={`${action} ${
-          bookmarked
-            ? "border-brand/40 bg-brand-soft text-brand"
-            : "border-line bg-surface-2 text-ink-muted hover:text-ink"
-        }`}
-      >
-        {bookmarked ? <BookmarkCheck size={15} /> : <Bookmark size={15} />}
-        {bookmarked ? "Saved" : "Save"}
-      </button>
+      {/* Saving now targets a list — one click for Favourites, caret for
+          everything else. */}
+      <div className="w-40">
+        <SaveToListButton problemId={problem.id} />
+      </div>
 
       {/* Ratings sit apart from the actions so the row reads clearly. */}
       <div className="ml-auto flex items-center gap-0.5">

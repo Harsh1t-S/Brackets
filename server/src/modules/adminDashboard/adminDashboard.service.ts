@@ -32,7 +32,8 @@ class AdminDashboardService {
 
       prisma.user.count(),
 
-      prisma.bookmark.count(),
+      // Saves live in lists now; the Bookmark table stopped growing.
+      prisma.problemListItem.count(),
     ]);
 
     return {
