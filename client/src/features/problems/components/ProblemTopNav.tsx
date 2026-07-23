@@ -7,6 +7,7 @@ import {
   Play,
   Send,
   Shuffle,
+  LayoutGrid,
 } from "lucide-react";
 import { useProblemContext } from "../hooks/useProblems";
 import { getRandomProblem } from "../../../services/problem.service";
@@ -23,10 +24,13 @@ export default function ProblemTopNav({
   problemId,
   onRun,
   onSubmit,
+  onResetLayout,
 }: {
   problemId: string;
   onRun: () => void;
   onSubmit: () => void;
+  /** Restores the default panel arrangement; absent until the dock mounts. */
+  onResetLayout?: () => void;
 }) {
   const { data } = useProblemContext(problemId);
   const { user } = useAuth();
@@ -108,6 +112,17 @@ export default function ProblemTopNav({
           >
             <Shuffle size={15} />
           </button>
+
+          {onResetLayout && (
+            <button
+              onClick={onResetLayout}
+              title="Reset the panel layout"
+              aria-label="Reset the panel layout"
+              className={`${btn} ${enabled}`}
+            >
+              <LayoutGrid size={15} />
+            </button>
+          )}
         </div>
       </div>
 
