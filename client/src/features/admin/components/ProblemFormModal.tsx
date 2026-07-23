@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { X, Plus, Trash2 } from "lucide-react";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
 
 import type { AdminProblem, Difficulty, Example, TestCase } from "../../../types/adminProblem";
 
 import { useCreateProblem, useUpdateProblem } from "../hooks/useAdminProblems";
 import { useToast } from "../../../components/common/Toast";
 import Modal from "../../../components/common/Modal";
+import RichTextEditor from "../../../components/common/RichTextEditor";
 
 interface Props {
   open: boolean;
@@ -361,15 +360,23 @@ export default function ProblemFormModal({ open, onClose, editingProblem }: Prop
 
           <div>
             <label className="mb-2 block text-sm font-medium text-ink">Description</label>
-            <div className="quill-wrap">
-              <ReactQuill theme="snow" value={description} onChange={setDescription} />
+            <div>
+              <RichTextEditor
+                value={description}
+                onChange={setDescription}
+                ariaLabel="Problem description"
+              />
             </div>
           </div>
 
           <div>
             <label className="mb-2 block text-sm font-medium text-ink">Constraints</label>
-            <div className="quill-wrap">
-              <ReactQuill theme="snow" value={constraints} onChange={setConstraints} />
+            <div>
+              <RichTextEditor
+                value={constraints}
+                onChange={setConstraints}
+                ariaLabel="Problem constraints"
+              />
             </div>
           </div>
 

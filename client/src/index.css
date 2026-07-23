@@ -243,37 +243,20 @@
   }
 }
 
-/* React-Quill theming to match the design tokens */
-.quill-wrap .ql-toolbar,
-.quill-wrap .ql-container {
-  border-color: var(--color-line) !important;
-}
-.quill-wrap .ql-toolbar {
-  background: var(--color-surface-2);
-  border-top-left-radius: 0.5rem;
-  border-top-right-radius: 0.5rem;
-}
-.quill-wrap .ql-container {
-  background: var(--color-surface);
-  border-bottom-left-radius: 0.5rem;
-  border-bottom-right-radius: 0.5rem;
-  color: var(--color-ink);
-  font-family: var(--font-sans);
-}
-.quill-wrap .ql-editor {
+/* TipTap editor surface — the toolbar and border live on the wrapper in
+   RichTextEditor, so this only has to tame the ProseMirror content area. */
+.ProseMirror {
   min-height: 8rem;
 }
-.quill-wrap .ql-editor.ql-blank::before {
+.ProseMirror:focus {
+  outline: none;
+}
+.ProseMirror p.is-editor-empty:first-child::before {
   color: var(--color-ink-subtle);
-}
-:root.dark .quill-wrap .ql-snow .ql-stroke {
-  stroke: var(--color-ink-muted);
-}
-:root.dark .quill-wrap .ql-snow .ql-fill {
-  fill: var(--color-ink-muted);
-}
-:root.dark .quill-wrap .ql-picker {
-  color: var(--color-ink-muted);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
 }
 
 /* Subtle grid / glow backdrop helpers */
