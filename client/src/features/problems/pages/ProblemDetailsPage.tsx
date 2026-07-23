@@ -294,6 +294,7 @@ export default function ProblemDetailsPage() {
               problem={problem}
               consoleTab={consoleTab}
               onConsoleTabChange={setConsoleTab}
+              onRun={run}
             />
           </div>
         </div>

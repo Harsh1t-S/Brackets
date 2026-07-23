@@ -1,15 +1,28 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { RotateCcw, Terminal, ChevronDown, Code2 } from "lucide-react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import {
+  RotateCcw,
+  Terminal,
+  ChevronDown,
+  Code2,
+  Copy,
+  Check,
+} from "lucide-react";
 import type { Problem } from "../../../types/problem";
 import { useToast } from "../../../components/common/Toast";
 import { useSplitPane } from "../hooks/useSplitPane";
 import { clearDraft, initialCode, writeDraft } from "../lib/drafts";
+
+// CodeMirror (highlighting, gutters, language grammars) is heavy and only the
+// solve view needs it, so it loads as its own chunk when this panel mounts.
+const CodeEditor = lazy(() => import("./CodeEditor"));
 
 interface Props {
   problem: Problem;
   /** Console tab is lifted so Run/Submit can live in the top bar. */
   consoleTab: "testcase" | "result";
   onConsoleTabChange: (tab: "testcase" | "result") => void;
+  /** Cmd/Ctrl+Enter in the editor triggers this, mirroring the Run button. */
+  onRun?: () => void;
 }
 
 const langLabels: Record<string, string> = {
@@ -41,8 +54,10 @@ export default function CodeWorkspace({
   problem,
   consoleTab,
   onConsoleTabChange,
+  onRun,
 }: Props) {
   const toast = useToast();
+  const [copied, setCopied] = useState(false);
   const languages = useMemo(
     () => Object.keys(problem.starterCode),
     [problem]
@@ -144,7 +159,15 @@ export default function CodeWorkspace({
     toast("Editor reset to starter code", "info");
   }
 
-  const lines = code.split("\n").length;
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch {
+      toast("Couldn't copy to clipboard", "error");
+    }
+  }
 
   return (
     <div ref={containerRef} className="flex flex-col lg:h-full lg:min-h-0">
@@ -182,6 +205,18 @@ export default function CodeWorkspace({
               />
             </div>
             <button
+              onClick={copy}
+              title="Copy code"
+              aria-label="Copy code"
+              className="rounded-md border border-line bg-surface p-1.5 text-ink-muted transition-colors hover:text-ink"
+            >
+              {copied ? (
+                <Check size={14} className="text-easy" />
+              ) : (
+                <Copy size={14} />
+              )}
+            </button>
+            <button
               onClick={reset}
               title="Reset to starter code"
               aria-label="Reset to starter code"
@@ -192,42 +227,23 @@ export default function CodeWorkspace({
           </div>
         </header>
 
-        {/* Gutter and textarea share one scroll container so they stay
-            aligned; flex stretch makes the textarea fill short files. */}
-        <div className="min-h-0 flex-1 overflow-auto bg-surface">
-          <div className="flex min-h-full">
-            <div
-              aria-hidden
-              className="shrink-0 select-none py-4 pl-4 pr-3 text-right font-mono text-sm leading-6 text-ink-subtle/60"
-            >
-              {Array.from({ length: lines }, (_, i) => (
-                <div key={i}>{i + 1}</div>
-              ))}
-            </div>
-            <textarea
+        {/* Full editor: syntax highlighting, gutter, bracket matching, and
+            Cmd/Ctrl+Enter to run — all owned by CodeMirror. */}
+        <div className="min-h-0 flex-1 overflow-hidden bg-surface">
+          <Suspense
+            fallback={
+              <div className="flex h-full items-center justify-center text-sm text-ink-subtle">
+                Loading editor…
+              </div>
+            }
+          >
+            <CodeEditor
               value={code}
-              onChange={(e) => setCode(e.target.value)}
-              rows={lines}
-              spellCheck={false}
-              autoCapitalize="off"
-              autoCorrect="off"
-              // Soft-wrapping made a long line occupy two visual rows while
-              // the gutter still counted one, so the numbers drifted out of
-              // alignment for the rest of the file. Scroll instead of wrap.
-              wrap="off"
-              aria-label="Code editor"
-              className="flex-1 resize-none overflow-y-hidden overflow-x-auto whitespace-pre bg-transparent py-4 pr-4 font-mono text-sm leading-6 text-ink outline-none"
-              onKeyDown={(e) => {
-                if (e.key === "Tab") {
-                  e.preventDefault();
-                  // insertText goes through the browser's own edit pipeline,
-                  // so Ctrl+Z still works. Rewriting value via setState
-                  // wiped the native undo stack on every Tab.
-                  document.execCommand("insertText", false, "  ");
-                }
-              }}
+              onChange={setCode}
+              language={language}
+              onRun={onRun}
             />
-          </div>
+          </Suspense>
         </div>
       </section>
 
