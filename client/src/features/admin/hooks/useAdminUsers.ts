@@ -1,10 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getUsers, setUserRole } from "../services/adminUser.service";
+import { getUsers, setUserRole, deleteUser } from "../services/adminUser.service";
 
-const QUERY_KEY = ["admin-users"];
+const USERS_KEY = "admin-users";
 
-export function useAdminUsers() {
-  return useQuery({ queryKey: QUERY_KEY, queryFn: getUsers });
+export function useAdminUsers(search?: string) {
+  const term = search?.trim() ?? "";
+  return useQuery({
+    queryKey: [USERS_KEY, term],
+    queryFn: () => getUsers(term || undefined),
+  });
 }
 
 export function useSetUserRole() {
@@ -13,7 +17,19 @@ export function useSetUserRole() {
     mutationFn: ({ id, role }: { id: string; role: "USER" | "ADMIN" }) =>
       setUserRole(id, role),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: [USERS_KEY] });
+    },
+  });
+}
+
+export function useDeleteUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteUser(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [USERS_KEY] });
+      // A deleted user's rows also drop off the dashboard counts.
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
 }

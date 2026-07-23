@@ -33,7 +33,10 @@ The client's API base URL lives in `client/src/lib/axios.ts`.
 
 - **Client** → Vercel (root directory `client`; SPA rewrites via `client/vercel.json`)
 - **API** → Railway (root directory `server`; build `npm run build`, start `npm start`)
-- Schema changes: `npx prisma db push` against the production `DATABASE_URL`.
+- Schema changes apply automatically: `npm start` runs `prisma db push` before
+  booting, so additive schema changes sync on the next deploy. Run
+  `npm run db:push` manually against the production `DATABASE_URL` if you need
+  to apply one out of band.
 
 ## Scripts
 

@@ -28,6 +28,15 @@ model User {
   // Small data-URI image uploaded by the user (resized client-side).
   avatar String? @db.Text
 
+  // Admin promotion audit: who flipped this user to ADMIN, and when. Both are
+  // null for seeded admins and for anyone who has never been promoted. The
+  // self-relation is SetNull so removing the promoter doesn't block the
+  // delete or orphan the FK — the record just loses its "promoted by" name.
+  promotedById String?
+  promotedBy   User?     @relation("AdminPromotions", fields: [promotedById], references: [id], onDelete: SetNull)
+  promoted     User[]    @relation("AdminPromotions")
+  promotedAt   DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -77,7 +86,8 @@ model Problem {
 
   createdById String?
 
-  createdBy User? @relation(fields: [createdById], references: [id])
+  // Deleting an author leaves their problems in place, just unattributed.
+  createdBy User? @relation(fields: [createdById], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

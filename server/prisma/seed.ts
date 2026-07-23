@@ -1681,11 +1681,26 @@ async function main() {
     bcrypt.hash("user1234", 10),
   ]);
 
+  // Primary admin now carries the Bracket brand — the product is no longer
+  // "CodeForge". Problems below are authored under this account.
   const admin = await prisma.user.upsert({
-    where: { email: "admin@codeforge.dev" },
+    where: { email: "admin@bracket.dev" },
     update: { role: "ADMIN", name: "Bracket Admin" },
     create: {
       name: "Bracket Admin",
+      email: "admin@bracket.dev",
+      password: adminPassword,
+      role: "ADMIN",
+    },
+  });
+
+  // The old CodeForge admin is kept so anyone still using those credentials
+  // isn't locked out; it stays an admin but is no longer the seed author.
+  await prisma.user.upsert({
+    where: { email: "admin@codeforge.dev" },
+    update: { role: "ADMIN" },
+    create: {
+      name: "Legacy Admin",
       email: "admin@codeforge.dev",
       password: adminPassword,
       role: "ADMIN",
@@ -1693,11 +1708,11 @@ async function main() {
   });
 
   await prisma.user.upsert({
-    where: { email: "user@codeforge.dev" },
+    where: { email: "user@bracket.dev" },
     update: {},
     create: {
       name: "Jane Developer",
-      email: "user@codeforge.dev",
+      email: "user@bracket.dev",
       password: userPassword,
       role: "USER",
     },
@@ -1750,8 +1765,8 @@ async function main() {
   console.log(
     `✅ Seed completed: ${problems.length} problems upserted (users, bookmarks & votes preserved)`
   );
-  console.log("   Admin login: admin@codeforge.dev / admin123");
-  console.log("   User login:  user@codeforge.dev / user1234");
+  console.log("   Admin login: admin@bracket.dev / admin123");
+  console.log("   User login:  user@bracket.dev / user1234");
 }
 
 main()

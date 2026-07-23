@@ -98,6 +98,8 @@ export function useSplitPane({
           ? ("vertical" as const)
           : ("horizontal" as const),
       "aria-valuenow": Math.round(size),
+      "aria-valuemin": min,
+      "aria-valuemax": max,
       tabIndex: 0,
       onPointerDown: (e: React.PointerEvent) => {
         // Primary button only — a right-click here used to begin a drag that

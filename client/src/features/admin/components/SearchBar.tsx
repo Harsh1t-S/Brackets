@@ -3,9 +3,14 @@ import { Search } from "lucide-react";
 interface Props {
   value?: string;
   onChange?: (value: string) => void;
+  placeholder?: string;
 }
 
-export default function SearchBar({ value = "", onChange }: Props) {
+export default function SearchBar({
+  value = "",
+  onChange,
+  placeholder = "Search problems...",
+}: Props) {
   return (
     <div className="relative w-full sm:max-w-md">
       <Search
@@ -14,7 +19,7 @@ export default function SearchBar({ value = "", onChange }: Props) {
       />
       <input
         type="text"
-        placeholder="Search problems..."
+        placeholder={placeholder}
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
         className="input py-2.5 pl-10 pr-4"
