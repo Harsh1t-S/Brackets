@@ -65,5 +65,28 @@ export const deleteUser = async (id: string) => {
   // Cascades clear the user's bookmarks/votes/solved rows; authored problems
   // and any promotions they granted are detached (createdById / promotedById
   // set null) rather than deleted.
-  return prisma.user.delete({ where: { id } });
+  //
+  // The vote cascade needs help: like/dislike totals are denormalised onto
+  // Problem, so dropping a voter's rows without adjusting the counters leaves
+  // every problem they ever voted on permanently inflated, with no way to
+  // tell later. Roll their votes back first, in the same transaction.
+  return prisma.$transaction(async (tx) => {
+    const votes = await tx.problemVote.findMany({
+      where: { userId: id },
+      select: { problemId: true, value: true },
+    });
+
+    for (const vote of votes) {
+      if (vote.value !== 1 && vote.value !== -1) continue;
+      await tx.problem.update({
+        where: { id: vote.problemId },
+        data:
+          vote.value === 1
+            ? { likes: { decrement: 1 } }
+            : { dislikes: { decrement: 1 } },
+      });
+    }
+
+    return tx.user.delete({ where: { id } });
+  });
 };

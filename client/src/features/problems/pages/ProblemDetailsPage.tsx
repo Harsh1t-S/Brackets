@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { Tag, Building2, Lightbulb, ChevronDown } from "lucide-react";
 import { useProblem } from "../hooks/useProblem";
@@ -45,15 +45,19 @@ export default function ProblemDetailsPage() {
     setConsoleTab("testcase");
   }, [problem?.id]);
 
-  function run() {
+  // Memoised because `run` reaches CodeEditor as a prop and feeds its
+  // extensions useMemo. A fresh identity each render rebuilt the CodeMirror
+  // keymap on every render of this page — including every pointermove while
+  // the divider is being dragged.
+  const run = useCallback(() => {
     setConsoleTab("result");
     toast("Runtime isn't connected yet — coming soon", "info");
-  }
+  }, [toast]);
 
-  function submit() {
+  const submit = useCallback(() => {
     setConsoleTab("result");
     toast("Submissions aren't wired up yet — coming soon", "info");
-  }
+  }, [toast]);
 
   useDocumentTitle(
     problem ? `${problem.number}. ${problem.title}` : "Problem"
