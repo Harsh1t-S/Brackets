@@ -24,20 +24,20 @@ export default function StatCard({
   tone = "brand",
 }: StatCardProps) {
   return (
-    <div className="card p-5 transition-all duration-150 hover:-translate-y-0.5 hover:border-line-strong">
-      <div className="flex items-start justify-between">
-        <p className="text-sm text-ink-muted">{title}</p>
-        {Icon && (
-          <span
-            className={`flex h-9 w-9 items-center justify-center rounded-lg ${toneMap[tone]}`}
-          >
-            <Icon size={17} />
-          </span>
-        )}
+    <div className="card flex items-center gap-4 p-4 transition-all duration-150 hover:-translate-y-0.5 hover:border-line-strong">
+      {Icon && (
+        <span
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${toneMap[tone]}`}
+        >
+          <Icon size={18} />
+        </span>
+      )}
+      <div className="min-w-0">
+        <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">
+          {title}
+        </p>
+        <p className="text-2xl font-bold tracking-tight text-ink">{value}</p>
       </div>
-      <h2 className="mt-3 text-3xl font-bold tracking-tight text-ink">
-        {value}
-      </h2>
     </div>
   );
 }

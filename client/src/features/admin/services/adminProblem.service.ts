@@ -25,6 +25,7 @@ export interface AdminProblemQuery {
   limit?: number;
   search?: string;
   difficulty?: string;
+  sort?: string;
 }
 
 class AdminProblemService {

@@ -11,7 +11,7 @@ export class AdminProblemController {
     res: Response
   ): Promise<void> {
     try {
-      const { page, limit, search, difficulty } = req.query;
+      const { page, limit, search, difficulty, sort } = req.query;
 
       const result = await adminProblemService.getAllProblems({
         page: Math.max(Number(page) || 1, 1),
@@ -19,6 +19,7 @@ export class AdminProblemController {
         limit: Math.min(Math.max(Number(limit) || 10, 1), 100),
         search: search as string,
         difficulty: difficulty as string,
+        sort: sort as string,
       });
 
       res.status(200).json({

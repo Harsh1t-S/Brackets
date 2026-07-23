@@ -44,6 +44,8 @@ export interface AdminProblemQuery {
   limit?: number;
   search?: string;
   difficulty?: string;
+  /** "newest" orders by createdAt desc; anything else by problem number. */
+  sort?: string;
 }
 
 export class AdminProblemService {
@@ -52,6 +54,7 @@ export class AdminProblemService {
     limit = 10,
     search,
     difficulty,
+    sort,
   }: AdminProblemQuery = {}) {
     const where = {
       ...(search && {
@@ -71,7 +74,10 @@ export class AdminProblemService {
         where,
         skip: (page - 1) * limit,
         take: limit,
-        orderBy: { number: "asc" },
+        // The dashboard's "Recently added" panel asked for page 1 of this
+        // list, which was ordered by number ascending — so it showed the five
+        // oldest problems in the set under a "recently added" heading.
+        orderBy: sort === "newest" ? { createdAt: "desc" } : { number: "asc" },
         include: {
           createdBy: { select: { id: true, name: true, email: true } },
           testCases: { orderBy: { order: "asc" } },

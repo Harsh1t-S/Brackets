@@ -12,17 +12,14 @@ const badgeClass: Record<string, string> = {
 
 export default function AdminDashboard() {
   useDocumentTitle("Dashboard · Admin");
-  const { data } = useAdminProblems({ page: 1, limit: 5 });
+  // "Recently added" means newest first — page 1 of the default ordering was
+  // the five *oldest* problems in the set.
+  const { data } = useAdminProblems({ page: 1, limit: 6, sort: "newest" });
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight text-ink">Dashboard</h1>
-        <p className="mt-1 text-ink-muted">
-          Welcome to the Bracket admin panel.
-        </p>
-      </div>
-
+      {/* No page heading here: the topbar already says "Dashboard / Platform
+          overview" a few pixels above, and repeating it was pure duplication. */}
       <StatsGrid />
 
       <div className="mt-8 grid items-start gap-6 lg:grid-cols-3">
@@ -39,18 +36,26 @@ export default function AdminDashboard() {
           <div className="space-y-2">
             {data?.problems.length ? (
               data.problems.map((p) => (
-                <div
+                <Link
                   key={p.id}
-                  className="flex items-center justify-between rounded-lg border border-line bg-surface-2 px-4 py-3"
+                  to={`/problems/${p.number}/${p.slug}`}
+                  className="flex items-center justify-between rounded-lg border border-line bg-surface-2 px-4 py-2.5 transition-colors hover:border-line-strong hover:bg-surface"
                 >
-                  <span className="text-sm text-ink">
-                    <span className="mr-2 text-ink-subtle">#{p.number}</span>
+                  <span className="min-w-0 truncate text-sm text-ink">
+                    <span className="mr-2 font-mono text-xs text-ink-subtle">
+                      #{p.number}
+                    </span>
                     {p.title}
                   </span>
-                  <span className={badgeClass[p.difficulty] ?? "badge badge-easy"}>
-                    {p.difficulty}
+                  <span className="flex shrink-0 items-center gap-3">
+                    <span className="hidden text-xs text-ink-subtle sm:inline">
+                      {p.tags?.slice(0, 2).join(", ")}
+                    </span>
+                    <span className={badgeClass[p.difficulty] ?? "badge badge-easy"}>
+                      {p.difficulty}
+                    </span>
                   </span>
-                </div>
+                </Link>
               ))
             ) : (
               <p className="py-6 text-center text-sm text-ink-subtle">
