@@ -4,6 +4,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { getCurrentUser } from "../services/auth.service";
 
 interface User {
@@ -32,6 +33,7 @@ export function AuthProvider({
 }: {
   children: React.ReactNode;
 }) {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<User | null>(
     null
   );
@@ -73,6 +75,12 @@ export function AuthProvider({
 
   function login(token: string) {
     localStorage.setItem("token", token);
+    // Anything cached while signed out is anonymous: the problem list carries
+    // solved=false for every row and problem details ship an empty
+    // solutionCode. Those entries stay "fresh" for a minute, so without a
+    // reset the just-signed-in user sees no solved ticks and an empty Solution
+    // panel until the cache expires. Drop it and let queries refetch as "me".
+    queryClient.clear();
     loadUser();
   }
 

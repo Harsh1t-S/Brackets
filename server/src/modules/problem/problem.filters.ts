@@ -21,7 +21,9 @@ export function toList(value: unknown, cap = 25): string[] {
 
 /** Clamp a page number to a sane positive integer. */
 export function toPage(value: unknown): number {
-  return Math.max(Number(value) || 1, 1);
+  // Floor before clamping: a fractional page (e.g. ?page=1.3) otherwise flows
+  // into a fractional SQL OFFSET, which Postgres rejects outright.
+  return Math.max(Math.floor(Number(value)) || 1, 1);
 }
 
 /** Clamp page size so one request can't dump the whole table. */

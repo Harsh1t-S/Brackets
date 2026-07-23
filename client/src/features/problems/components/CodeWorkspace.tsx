@@ -97,14 +97,26 @@ export default function CodeWorkspace({
 
   // Flush the pending draft if the component goes away mid-edit (navigation,
   // tab close) so the last few keystrokes aren't lost to the debounce.
+  //
+  // The current code/starter are read through a ref so this effect can leave
+  // `code` out of its dependencies. With `code` in the deps, the cleanup ran
+  // on every keystroke and wrote to localStorage synchronously each time —
+  // exactly the work the debounce above exists to avoid. Keeping only
+  // problem.id/language means the cleanup still flushes when you switch
+  // problem or language (saving the buffer you're leaving), plus on unmount.
+  const buffer = useRef({ code, starter });
   useEffect(() => {
-    const flush = () => writeDraft(problem.id, language, code, starter);
+    buffer.current = { code, starter };
+  }, [code, starter]);
+  useEffect(() => {
+    const flush = () =>
+      writeDraft(problem.id, language, buffer.current.code, buffer.current.starter);
     window.addEventListener("pagehide", flush);
     return () => {
       window.removeEventListener("pagehide", flush);
       flush();
     };
-  }, [problem.id, language, code, starter]);
+  }, [problem.id, language]);
 
   /**
    * Switching language keeps each buffer intact — the old one is saved and

@@ -47,6 +47,12 @@ describe("toPage", () => {
   it("passes through valid pages", () => {
     expect(toPage("3")).toBe(3);
   });
+
+  it("floors a fractional page (no fractional SQL OFFSET)", () => {
+    expect(toPage("1.3")).toBe(1);
+    expect(toPage("2.9")).toBe(2);
+    expect(toPage("0.5")).toBe(1);
+  });
 });
 
 describe("toLimit", () => {
