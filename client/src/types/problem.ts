@@ -21,7 +21,10 @@ export interface Problem {
   tags: string[];
   companies?: string[];
 
+  /** Seeded, not measured — see solvedCount for a figure backed by real rows. */
   acceptance: number;
+  /** Distinct users who have marked this solved. */
+  solvedCount: number;
   likes: number;
   dislikes: number;
 

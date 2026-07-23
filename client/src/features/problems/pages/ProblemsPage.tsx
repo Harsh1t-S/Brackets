@@ -190,7 +190,7 @@ export default function ProblemsPage() {
         >
           {debouncedSearch && <option value="relevance">Relevance</option>}
           <option value="number">Number</option>
-          <option value="acceptance">Acceptance</option>
+          <option value="solved">Most solved</option>
           <option value="likes">Most liked</option>
           <option value="newest">Newest</option>
         </select>

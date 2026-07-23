@@ -4,12 +4,24 @@ import { ApiError } from "../../utils/ApiError";
 
 const DIFFICULTIES = new Set(["EASY", "MEDIUM", "HARD"]);
 
+/**
+ * How many distinct users have solved a problem. Unlike `acceptance` — a
+ * static number invented by the seed — this is derived from real rows, so it
+ * is the one completion stat the UI can state as fact.
+ */
+const SOLVED_COUNT = Prisma.raw(
+  `(SELECT COUNT(*) FROM "SolvedProblem" spc WHERE spc."problemId" = "Problem"."id")::int`
+);
+
 // Whitelisted sort orders — never interpolate user input into ORDER BY.
 const SORTS: Record<string, Prisma.Sql> = {
   number: Prisma.raw(`"number" ASC`),
   acceptance: Prisma.raw(`"acceptance" DESC`),
   likes: Prisma.raw(`"likes" DESC`),
   newest: Prisma.raw(`"createdAt" DESC`),
+  solved: Prisma.raw(
+    `(SELECT COUNT(*) FROM "SolvedProblem" sps WHERE sps."problemId" = "Problem"."id") DESC, "number" ASC`
+  ),
 };
 
 /**
@@ -20,26 +32,14 @@ const SORTS: Record<string, Prisma.Sql> = {
  * matched every row and "a_b" matched "axb". Backslash is Postgres' default
  * LIKE escape character, so escaping it first keeps a literal backslash literal.
  */
-const escapeLike = (term: string) => term.replace(/[\\%_]/g, "\\$&");
+export const escapeLike = (term: string) => term.replace(/[\\%_]/g, "\\$&");
 
 /** `["a","b"]` -> SQL `ARRAY['a','b']::text[]` (values stay bound params). */
 const textArray = (values: string[]) =>
   Prisma.sql`ARRAY[${Prisma.join(values.map((v) => Prisma.sql`${v}`))}]::text[]`;
 
-export const getProblems = async ({
-  page = 1,
-  limit = 10,
-  search,
-  difficulties = [],
-  tags = [],
-  companies = [],
-  match = "any",
-  status,
-  sort,
-  userId,
-}: {
-  page?: number;
-  limit?: number;
+/** The filters a problem query can be narrowed by, shared by list + shuffle. */
+export interface ProblemFilterInput {
   search?: string;
   /** Combinable difficulty filters — empty means "all". */
   difficulties?: string[];
@@ -49,35 +49,30 @@ export const getProblems = async ({
   match?: "all" | "any";
   /** Personal filters — need a signed-in user, ignored otherwise. */
   status?: "solved" | "unsolved" | "bookmarked";
-  sort?: string;
   userId?: string;
-}) => {
-  const skip = (page - 1) * limit;
+}
+
+/**
+ * Build the WHERE clause for a problem query.
+ *
+ * Extracted so the list and the shuffle button apply identical rules —
+ * shuffle used to pick from the whole table, so filtering to Hard and hitting
+ * shuffle could drop you on an Easy problem.
+ */
+const buildProblemWhere = ({
+  search,
+  difficulties = [],
+  tags = [],
+  companies = [],
+  match = "any",
+  status,
+  userId,
+}: ProblemFilterInput): Prisma.Sql => {
   const filters: Prisma.Sql[] = [];
 
   const term = search?.trim();
-  // Equality comparisons use the raw term; every ILIKE pattern uses this.
   const escaped = term ? escapeLike(term) : "";
 
-  // With a search term, rank by how well each row matches: exact title >
-  // title prefix > title contains > tag > company. Only meaningful with a
-  // term, so any other sort (or no term) falls back to the whitelist.
-  const orderBy =
-    term && (!sort || sort === "relevance")
-      ? Prisma.sql`
-          CASE
-            WHEN lower("title") = lower(${term}) THEN 0
-            WHEN "title" ILIKE ${escaped + "%"} THEN 1
-            WHEN "title" ILIKE ${`%${escaped}%`} THEN 2
-            WHEN EXISTS (
-              SELECT 1 FROM unnest("tags") AS t WHERE t ILIKE ${`%${escaped}%`}
-            ) THEN 3
-            WHEN EXISTS (
-              SELECT 1 FROM unnest("companies") AS c WHERE c ILIKE ${`%${escaped}%`}
-            ) THEN 4
-            ELSE 5
-          END ASC, "number" ASC`
-      : SORTS[sort ?? "number"] ?? SORTS.number;
   if (term) {
     // Match the term against the title, any tag, or any company — all
     // case-insensitive and partial (ILIKE).
@@ -128,9 +123,51 @@ export const getProblems = async ({
     }
   }
 
-  const whereSql = filters.length
+  return filters.length
     ? Prisma.sql`WHERE ${Prisma.join(filters, " AND ")}`
     : Prisma.empty;
+};
+
+/**
+ * With a search term, rank by how well each row matches: exact title >
+ * title prefix > title contains > tag > company. Only meaningful with a term,
+ * so any other sort (or no term) falls back to the whitelist.
+ */
+const buildOrderBy = (term: string | undefined, sort?: string): Prisma.Sql => {
+  if (!term || (sort && sort !== "relevance")) {
+    return SORTS[sort ?? "number"] ?? SORTS.number;
+  }
+
+  const escaped = escapeLike(term);
+  return Prisma.sql`
+    CASE
+      WHEN lower("title") = lower(${term}) THEN 0
+      WHEN "title" ILIKE ${escaped + "%"} THEN 1
+      WHEN "title" ILIKE ${`%${escaped}%`} THEN 2
+      WHEN EXISTS (
+        SELECT 1 FROM unnest("tags") AS t WHERE t ILIKE ${`%${escaped}%`}
+      ) THEN 3
+      WHEN EXISTS (
+        SELECT 1 FROM unnest("companies") AS c WHERE c ILIKE ${`%${escaped}%`}
+      ) THEN 4
+      ELSE 5
+    END ASC, "number" ASC`;
+};
+
+export const getProblems = async ({
+  page = 1,
+  limit = 10,
+  sort,
+  ...filterInput
+}: ProblemFilterInput & {
+  page?: number;
+  limit?: number;
+  sort?: string;
+}) => {
+  const skip = (page - 1) * limit;
+  const { userId } = filterInput;
+  const whereSql = buildProblemWhere(filterInput);
+  const orderBy = buildOrderBy(filterInput.search?.trim(), sort);
 
   const [problems, countRows] = await Promise.all([
     // Explicit column list: the public list must never ship solutionCode
@@ -139,6 +176,7 @@ export const getProblems = async ({
       SELECT "id", "number", "title", "slug", "difficulty", "tags",
              "companies", "acceptance", "likes", "dislikes",
              "createdAt", "updatedAt",
+             ${SOLVED_COUNT} AS "solvedCount",
              ${
                userId
                  ? Prisma.sql`EXISTS (
@@ -169,11 +207,20 @@ export const getProblems = async ({
   };
 };
 
-/** A random problem — powers the shuffle button in the problem header. */
-export const getRandomProblem = async () => {
-  const rows = await prisma.$queryRaw<
-    { number: number; slug: string }[]
-  >`SELECT "number", "slug" FROM "Problem" ORDER BY random() LIMIT 1`;
+/**
+ * A random problem — powers the shuffle button in the problem header.
+ *
+ * Takes the same filters as the list: shuffling used to draw from the whole
+ * table, so narrowing to Hard and hitting shuffle would happily drop you on
+ * an Easy one.
+ */
+export const getRandomProblem = async (filters: ProblemFilterInput = {}) => {
+  const whereSql = buildProblemWhere(filters);
+  const rows = await prisma.$queryRaw<{ number: number; slug: string }[]>`
+    SELECT "number", "slug" FROM "Problem"
+    ${whereSql}
+    ORDER BY random() LIMIT 1
+  `;
   return rows[0] ?? null;
 };
 
@@ -250,14 +297,35 @@ export const getFilterFacets = async () => {
 
 /** Fetch by problem number ("1") or slug ("two-sum"). */
 export const getProblem = async (key: string) => {
-  if (/^\d+$/.test(key)) {
-    return prisma.problem.findUnique({
-      where: { number: Number(key) },
-    });
-  }
-  return prisma.problem.findUnique({
-    where: { slug: key },
+  const problem = await prisma.problem.findUnique({
+    where: /^\d+$/.test(key) ? { number: Number(key) } : { slug: key },
+    // solvedBy count travels with the problem so the solve view can show a
+    // real completion figure alongside the seeded `acceptance`.
+    include: { _count: { select: { solvedBy: true } } },
   });
+
+  if (!problem) return null;
+
+  const { _count, ...rest } = problem;
+  return { ...rest, solvedCount: _count.solvedBy };
+};
+
+/**
+ * Work out what a click does to an existing vote, and how the problem's
+ * cached counters must move to match.
+ *
+ * Pure and exported so the arithmetic can be tested exhaustively: this is
+ * where like/dislike drift has come from twice, and a wrong delta here is
+ * invisible until the totals have already diverged from the vote rows.
+ */
+export const voteTransition = (old: number, clicked: 1 | -1) => {
+  // Clicking the same reaction again clears it (toggle), like LeetCode.
+  const next = old === clicked ? 0 : clicked;
+  return {
+    next,
+    likesDelta: (next === 1 ? 1 : 0) - (old === 1 ? 1 : 0),
+    dislikesDelta: (next === -1 ? 1 : 0) - (old === -1 ? 1 : 0),
+  };
 };
 
 /**
@@ -294,8 +362,7 @@ export const setVote = async (
     });
 
     const old = existing?.value ?? 0;
-    // Clicking the same reaction again clears it (toggle), like LeetCode.
-    const next = old === value ? 0 : value;
+    const { next, likesDelta, dislikesDelta } = voteTransition(old, value);
 
     if (next === 0) {
       if (existing) {
@@ -310,9 +377,6 @@ export const setVote = async (
         create: { userId, problemId, value: next },
       });
     }
-
-    const likesDelta = (next === 1 ? 1 : 0) - (old === 1 ? 1 : 0);
-    const dislikesDelta = (next === -1 ? 1 : 0) - (old === -1 ? 1 : 0);
 
     const problem = await tx.problem.update({
       where: { id: problemId },

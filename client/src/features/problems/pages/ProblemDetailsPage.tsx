@@ -168,8 +168,13 @@ export default function ProblemDetailsPage() {
                   />
                 </button>
 
+                {/* Solved count comes from real SolvedProblem rows. The
+                    `acceptance` figure it replaced was invented by the seed
+                    and never computed from anything. */}
                 <span className="ml-auto text-xs text-ink-subtle">
-                  {problem.acceptance}% acceptance
+                  {problem.solvedCount === 1
+                    ? "1 person solved this"
+                    : `${problem.solvedCount ?? 0} people solved this`}
                 </span>
               </div>
 

@@ -11,7 +11,8 @@ router.get("/", optionalAuth, controller.list);
 // Static paths must precede "/:slug" so they aren't swallowed by it.
 router.get("/stats", controller.stats);
 router.get("/filters", controller.filters);
-router.get("/random", controller.random);
+// optionalAuth so shuffle can honour the solved/bookmarked status filters.
+router.get("/random", optionalAuth, controller.random);
 
 router.post("/:id/vote", protect, controller.vote);
 router.get("/:id/vote", protect, controller.myVote);

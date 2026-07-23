@@ -100,9 +100,21 @@ export const filters = asyncHandler(async (_req: Request, res: Response) => {
   res.status(200).json({ success: true, data });
 });
 
-export const random = asyncHandler(async (_req: Request, res: Response) => {
-  const data = await getRandomProblem();
-  if (!data) throw new ApiError(404, "No problems available.");
+export const random = asyncHandler(async (req: Request, res: Response) => {
+  const { search, difficulty, tag, tags, companies, match, status } = req.query;
+
+  // Shuffle honours whatever the list is currently filtered to.
+  const data = await getRandomProblem({
+    search: search as string,
+    difficulties: toDifficulties(difficulty),
+    tags: [...new Set([...toList(tag), ...toList(tags)])],
+    companies: toList(companies),
+    match: toMatch(match),
+    status: toStatus(status),
+    userId: req.user?.id,
+  });
+
+  if (!data) throw new ApiError(404, "No problems match those filters.");
   res.status(200).json({ success: true, data });
 });
 
