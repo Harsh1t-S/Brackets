@@ -11,6 +11,7 @@ import adminUserRoutes from "./modules/admin/adminUser.routes";
 import { errorHandler } from "./middleware/error.middleware";
 import adminDashboardRoutes from "./modules/adminDashboard/adminDashboard.routes";
 import dashboardRoutes from "./modules/dashboard/dashboard.routes";
+import listRoutes from "./modules/list/list.routes";
 import prisma from "./prisma/prisma";
 
 const app = express();
@@ -70,6 +71,7 @@ app.use("/api/admin", adminProblemRoutes);
 app.use("/api/admin/users", adminUserRoutes);
 app.use("/api/admin/dashboard", adminDashboardRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/lists", listRoutes);
 
 app.get("/", (_req, res) => {
   res.json({ success: true, message: "Bracket API Running 🚀" });

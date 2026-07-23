@@ -44,6 +44,7 @@ model User {
   bookmarks Bookmark[]
   votes    ProblemVote[]
   solved   SolvedProblem[]
+  lists    ProblemList[]
 }
 
 model SolvedProblem {
@@ -58,6 +59,62 @@ model SolvedProblem {
   createdAt DateTime @default(now())
 
   @@unique([userId, problemId])
+}
+
+enum ListVisibility {
+  PRIVATE
+  PUBLIC
+}
+
+/**
+ * A user-curated collection of problems ("DP grind", "Interview prep").
+ *
+ * Every user gets one list flagged `isDefault` — their Favourites — which is
+ * what the bookmark button writes to, so bookmarking stays one click and the
+ * old Bookmark rows had somewhere to land.
+ */
+model ProblemList {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String? @db.Text
+
+  /** Public lists are readable by anyone holding the link, via this slug. */
+  slug       String         @unique
+  visibility ListVisibility @default(PRIVATE)
+
+  /** The built-in Favourites list. Exactly one per user; cannot be deleted. */
+  isDefault Boolean @default(false)
+
+  items ProblemListItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Two people may both have a "Favourites"; one person may not have two.
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model ProblemListItem {
+  id String @id @default(cuid())
+
+  listId    String
+  problemId String
+
+  list    ProblemList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  problem Problem     @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  /** Manual ordering within a list; ties fall back to when it was added. */
+  position Int @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@unique([listId, problemId])
+  @@index([listId])
 }
 
 model Problem {
@@ -99,6 +156,7 @@ model Problem {
   testCases TestCase[]
   votes     ProblemVote[]
   solvedBy  SolvedProblem[]
+  listItems ProblemListItem[]
 
   // List filters hit these constantly; GIN makes the array
   // containment/overlap operators (@>, &&) index-backed.
