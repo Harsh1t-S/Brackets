@@ -47,7 +47,7 @@ export default function ProblemActions({ problem }: Props) {
     "inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm transition-colors disabled:opacity-50";
 
   return (
-    <div className="mt-5 flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <button
         onClick={guard(() =>
           toggleSolved.mutate(undefined, {

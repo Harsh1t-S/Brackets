@@ -30,7 +30,10 @@ export default function DescriptionPanel() {
   const pillOpen = "border-brand/40 bg-brand-soft text-brand";
 
   return (
-    <div className="h-full overflow-y-auto bg-surface px-6 py-5">
+    <div className="flex h-full flex-col bg-surface">
+      {/* Scrollable statement. The actions live in a pinned footer below,
+          LeetCode-style, so they no longer crowd the top of the question. */}
+      <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
       <h1 className="text-2xl font-bold tracking-tight text-ink">
         <span className="mr-2 text-ink-subtle">#{problem.number}</span>
         {problem.title}
@@ -116,8 +119,6 @@ export default function DescriptionPanel() {
         </div>
       )}
 
-      <ProblemActions problem={problem} />
-
       <div className="mt-5 border-t border-line pt-5">
         <div
           className="prose prose-invert max-w-none prose-pre:bg-surface-2 prose-code:text-brand"
@@ -166,6 +167,13 @@ export default function DescriptionPanel() {
       <div className="mt-10 border-t border-line pt-5">
         <p className="mb-3 text-sm font-semibold text-ink">Related problems</p>
         <ProblemNav problemId={problem.id} />
+      </div>
+      </div>
+
+      {/* Pinned action bar — solved / save / rate, always in reach without
+          scrolling and out of the statement's way. */}
+      <div className="shrink-0 border-t border-line bg-surface-2 px-3 py-2">
+        <ProblemActions problem={problem} />
       </div>
     </div>
   );

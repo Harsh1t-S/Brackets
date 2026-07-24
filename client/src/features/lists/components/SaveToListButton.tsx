@@ -128,7 +128,9 @@ export default function SaveToListButton({ problemId }: Props) {
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-full z-30 mt-2 w-64 overflow-hidden rounded-xl border border-line bg-elevated shadow-lg shadow-black/40"
+          // Opens upward: the button lives in the description's bottom action
+          // bar, so a downward menu would spill off the panel.
+          className="absolute bottom-full right-0 z-30 mb-2 w-64 overflow-hidden rounded-xl border border-line bg-elevated shadow-lg shadow-black/40"
         >
           <p className="border-b border-line px-3 py-2 text-xs font-semibold uppercase tracking-wide text-ink-subtle">
             Save to
