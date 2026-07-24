@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Braces, Check } from "lucide-react";
@@ -13,7 +13,13 @@ import { errorMessage } from "../../../lib/errors";
 export default function LoginPage() {
   useDocumentTitle("Sign in");
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
+
+  // Where the user was headed before being bounced to login (set by
+  // RequireAuth). Land them back there rather than always on the list.
+  const from = (location.state as { from?: { pathname: string; search: string; hash: string } } | null)?.from;
+  const redirectTo = from ? `${from.pathname}${from.search}${from.hash}` : "/problems";
 
   const [showPassword, setShowPassword] = useState(false);
   const [formError, setFormError] = useState("");
@@ -32,7 +38,7 @@ export default function LoginPage() {
     try {
       const data = await loginService(values);
       login(data.token);
-      navigate("/problems");
+      navigate(redirectTo, { replace: true });
     } catch (err) {
       setFormError(errorMessage(err, "Invalid email or password."));
     }

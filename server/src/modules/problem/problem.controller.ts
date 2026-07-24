@@ -133,10 +133,8 @@ export const details = asyncHandler(
       throw new ApiError(404, "Problem not found.");
     }
 
-    // The reference solution is only for signed-in users; anonymous
-    // visitors get everything else (statement, examples, starter code).
-    const data = req.user ? problem : { ...problem, solutionCode: {} };
-
-    res.status(200).json({ success: true, data });
+    // The route is behind `protect`, so every caller here is authenticated
+    // and gets the full problem including the reference solution.
+    res.status(200).json({ success: true, data: problem });
   }
 );

@@ -22,6 +22,8 @@ router.get("/:id/solved", protect, controller.mySolved);
 
 router.get("/:id/context", controller.context);
 
-router.get("/:slug", optionalAuth, controller.details);
+// Opening a problem requires an account — the full statement, starter code
+// and reference solution are gated behind auth, not just stripped for guests.
+router.get("/:slug", protect, controller.details);
 
 export default router;

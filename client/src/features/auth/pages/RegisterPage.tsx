@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Braces, Check } from "lucide-react";
@@ -13,7 +13,12 @@ import { errorMessage } from "../../../lib/errors";
 export default function RegisterPage() {
   useDocumentTitle("Create account");
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
+
+  // Preserve the destination if the user arrived here from the auth gate.
+  const from = (location.state as { from?: { pathname: string; search: string; hash: string } } | null)?.from;
+  const redirectTo = from ? `${from.pathname}${from.search}${from.hash}` : "/problems";
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -38,7 +43,7 @@ export default function RegisterPage() {
         password: values.password,
       });
       login(data.token);
-      navigate("/problems");
+      navigate(redirectTo, { replace: true });
     } catch (err) {
       setFormError(errorMessage(err, "Registration failed."));
     }

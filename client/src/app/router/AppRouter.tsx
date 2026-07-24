@@ -73,8 +73,12 @@ export default function AppRouter() {
       </Route>
 
       {/* Solve view: full-screen workspace with its own slim bar — no site
-          navbar/footer so the panels own the whole viewport. */}
-      <Route path="/problems/:key/:slug?" element={<ProblemDetailsPage />} />
+          navbar/footer so the panels own the whole viewport. Opening a problem
+          requires an account; RequireAuth bounces guests to login and brings
+          them back here afterwards. */}
+      <Route element={<RequireAuth />}>
+        <Route path="/problems/:key/:slug?" element={<ProblemDetailsPage />} />
+      </Route>
 
       {/* Standalone auth screens (no site chrome, signed-in users bounced) */}
       <Route element={<GuestOnly />}>
