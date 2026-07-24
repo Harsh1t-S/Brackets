@@ -259,6 +259,65 @@
   pointer-events: none;
 }
 
+/* dockview (solve view) retinted to the app's tokens. Layered on top of the
+   built-in "abyss-spaced" theme, so this only maps colours + radii — the
+   spacing, rounded groups and drop indicator come from that base. */
+.dockview-theme-bracket {
+  --dv-group-view-background-color: var(--color-surface);
+  --dv-tabs-and-actions-container-background-color: var(--color-surface-2);
+  --dv-tabs-and-actions-container-height: 40px;
+
+  /* Active tab merges into the panel body; others recede. */
+  --dv-activegroup-visiblepanel-tab-background-color: var(--color-surface);
+  --dv-activegroup-visiblepanel-tab-color: var(--color-ink);
+  --dv-activegroup-hiddenpanel-tab-background-color: var(--color-surface-2);
+  --dv-activegroup-hiddenpanel-tab-color: var(--color-ink-muted);
+  --dv-inactivegroup-visiblepanel-tab-background-color: var(--color-surface);
+  --dv-inactivegroup-visiblepanel-tab-color: var(--color-ink-muted);
+  --dv-inactivegroup-hiddenpanel-tab-background-color: var(--color-surface-2);
+  --dv-inactivegroup-hiddenpanel-tab-color: var(--color-ink-subtle);
+
+  --dv-tab-divider-color: transparent;
+  --dv-separator-border: var(--color-line);
+
+  /* Idle dividers disappear into the gap; brand shows only while dragging a
+     divider or hovering a drop target — that's what reads as "smooth". */
+  --dv-sash-color: transparent;
+  --dv-active-sash-color: var(--color-brand);
+  --dv-drag-over-background-color: var(--color-brand-soft);
+  --dv-drag-over-border-color: var(--color-brand);
+
+  --dv-icon-hover-background-color: var(--color-elevated);
+  --dv-scrollbar-background-color: var(--color-line-strong);
+
+  /* Match the app's rounded cards instead of the theme's sharper corners. */
+  --dv-border-radius: 0.75rem;
+  --dv-tab-border-radius: 0.5rem;
+
+  /* The canvas shows through the gaps between groups. */
+  background-color: var(--color-canvas);
+}
+
+/* Hairline border so a group reads as a card even against the dark canvas. */
+.dockview-theme-bracket .dv-groupview {
+  border: 1px solid var(--color-line);
+}
+
+/* Ease the drop-target highlight in rather than snapping it on. */
+.dockview-theme-bracket .dv-drop-target-anchor {
+  transition:
+    top 0.12s ease,
+    left 0.12s ease,
+    width 0.12s ease,
+    height 0.12s ease,
+    opacity 0.12s ease;
+}
+
+/* Subtle handle on hover for the invisible resize sashes. */
+.dockview-theme-bracket .dv-sash:hover {
+  background-color: var(--color-line-strong);
+}
+
 /* Subtle grid / glow backdrop helpers */
 .bg-grid {
   background-image:

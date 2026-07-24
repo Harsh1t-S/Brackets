@@ -3,10 +3,26 @@ import { useCallback, useEffect, useRef } from "react";
 // the component lives in dockview-react, the types and CSS in the core.
 import {
   DockviewReact,
+  themeAbyssSpaced,
   type IDockviewPanelProps,
 } from "dockview-react";
-import type { DockviewApi, DockviewReadyEvent } from "dockview-core";
+import type {
+  DockviewApi,
+  DockviewReadyEvent,
+  DockviewTheme,
+} from "dockview-core";
 import "dockview-core/dist/styles/dockview.css";
+
+// Start from the "spaced" theme — it already draws rounded, gapped groups and
+// a thin line drop-indicator (the square, flush edges came from the plain
+// theme). `dockview-theme-bracket` layers on top to retint it to the app's
+// own tokens; the tighter gap keeps the panels reading as one workspace.
+const bracketTheme: DockviewTheme = {
+  ...themeAbyssSpaced,
+  name: "bracket",
+  className: "dockview-theme-abyss-spaced dockview-theme-bracket",
+  gap: 6,
+};
 
 import DescriptionPanel from "../panels/DescriptionPanel";
 import TestcasesPanel from "../panels/TestcasesPanel";
@@ -154,7 +170,8 @@ export default function SolveDock({
     <DockviewReact
       components={components}
       onReady={handleReady}
-      className="dockview-theme-abyss h-full"
+      theme={bracketTheme}
+      className="h-full"
     />
   );
 }
