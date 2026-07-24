@@ -1953,11 +1953,17 @@ async function main() {
     bcrypt.hash("user1234", 10),
   ]);
 
-  // Primary admin now carries the Bracket brand — the product is no longer
-  // "CodeForge". Problems below are authored under this account.
+  // Primary admin — problems below are authored under this account.
+  //
+  // The update clause only guarantees the account is still an admin so
+  // `createdById` stays valid. It must NOT set `name`: that's user-editable
+  // from the profile page, and re-seeding used to stamp "Bracket Admin" back
+  // over whatever the person had renamed themselves to. Same clobber the
+  // like/dislike counters had — the seed's job is to add content, not to
+  // reset live account data.
   const admin = await prisma.user.upsert({
     where: { email: "admin@bracket.dev" },
-    update: { role: "ADMIN", name: "Bracket Admin" },
+    update: { role: "ADMIN" },
     create: {
       name: "Bracket Admin",
       email: "admin@bracket.dev",
