@@ -3,8 +3,10 @@ import { Link, Navigate, useParams } from "react-router-dom";
 import { useProblem } from "../hooks/useProblem";
 import ProblemTopNav from "../components/ProblemTopNav";
 import SolveDock, { type SolveDockHandle } from "../components/SolveDock";
+import MobileSolveView from "../components/MobileSolveView";
 import { SolveProvider } from "../context/SolveContext";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
+import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { PageLoader } from "../../../components/common/Spinner";
 import { useToast } from "../../../components/common/Toast";
 
@@ -15,6 +17,10 @@ export default function ProblemDetailsPage() {
   const toast = useToast();
 
   const [dock, setDock] = useState<SolveDockHandle | null>(null);
+
+  // dockview needs ~1500px for its two-column default; below that it can't
+  // shrink, so narrow screens get the stacked mobile view instead.
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
 
   // The dock hands these to CodeEditor's keymap, so a stable identity keeps
   // CodeMirror from rebuilding its extensions on every render.
@@ -60,12 +66,13 @@ export default function ProblemDetailsPage() {
           problemId={problem.id}
           onRun={run}
           onSubmit={submit}
-          onResetLayout={dock?.resetLayout}
+          // The reset-layout button is meaningless without a dock to reset.
+          onResetLayout={isDesktop ? dock?.resetLayout : undefined}
         />
 
         {/* dockview measures itself, so the wrapper must have a real height. */}
-        <main className="min-h-0 flex-1 p-2">
-          <SolveDock onReady={setDock} />
+        <main className="min-h-0 flex-1 p-2 lg:p-2">
+          {isDesktop ? <SolveDock onReady={setDock} /> : <MobileSolveView />}
         </main>
       </div>
     </SolveProvider>
