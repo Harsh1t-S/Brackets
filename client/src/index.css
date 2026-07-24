@@ -294,6 +294,10 @@
   --dv-border-radius: 0.75rem;
   --dv-tab-border-radius: 0.5rem;
 
+  /* Tighten the edge padding to match the 6px inter-group gap — the spaced
+     theme's default 10px left an obvious gap under the top bar. */
+  --dv-spacing-padding: 6px;
+
   /* The canvas shows through the gaps between groups. */
   background-color: var(--color-canvas);
 }

@@ -70,8 +70,10 @@ export default function ProblemDetailsPage() {
           onResetLayout={isDesktop ? dock?.resetLayout : undefined}
         />
 
-        {/* dockview measures itself, so the wrapper must have a real height. */}
-        <main className="min-h-0 flex-1 p-2 lg:p-2">
+        {/* dockview measures itself, so the wrapper must have a real height.
+            No padding here — the dock's own spacing frames the panels, and
+            stacking main padding on top left a big gap under the top bar. */}
+        <main className="min-h-0 flex-1">
           {isDesktop ? <SolveDock onReady={setDock} /> : <MobileSolveView />}
         </main>
       </div>
