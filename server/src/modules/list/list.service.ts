@@ -35,18 +35,36 @@ const listSelect = {
  * users can both have "Interview prep" without colliding, and nobody can
  * enumerate other people's lists by trying obvious slugs.
  */
-function makeSlug(name: string): string {
-  const base =
+/** The URL-safe base of a slug (no random suffix) — exported for testing. */
+export function slugBase(name: string): string {
+  return (
     name
       .toLowerCase()
       .trim()
       .replace(/[^a-z0-9\s-]/g, "")
       .replace(/\s+/g, "-")
       .replace(/-+/g, "-")
-      .slice(0, 40) || "list";
+      .slice(0, 40) || "list"
+  );
+}
 
+function makeSlug(name: string): string {
   const suffix = Math.random().toString(36).slice(2, 8);
-  return `${base}-${suffix}`;
+  return `${slugBase(name)}-${suffix}`;
+}
+
+/**
+ * Whether `viewerId` may read a list. The single source of truth for list
+ * visibility — a public list is open to anyone, a private one only to its
+ * owner. `getList` turns a `false` here into a 404 (not 403) so a private
+ * list never confirms it exists.
+ */
+export function canViewList(
+  list: { visibility: "PRIVATE" | "PUBLIC"; ownerId: string },
+  viewerId?: string
+): boolean {
+  if (list.visibility === "PUBLIC") return true;
+  return !!viewerId && list.ownerId === viewerId;
 }
 
 /**
@@ -124,7 +142,7 @@ export const getList = async (slug: string, viewerId?: string) => {
   if (!list) throw new ApiError(404, "List not found.");
 
   const isOwner = !!viewerId && list.user.id === viewerId;
-  if (list.visibility === "PRIVATE" && !isOwner) {
+  if (!canViewList({ visibility: list.visibility, ownerId: list.user.id }, viewerId)) {
     // 404 rather than 403: a private list shouldn't confirm it exists.
     throw new ApiError(404, "List not found.");
   }
